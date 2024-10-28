@@ -10,13 +10,11 @@ namespace UniPlatform.DB.Entities
             
         }
         [Key]
-        public string Id { get; set; }
+        public int Id { get; set; }
 
         [Required]
         public string OptionText { get; set; }
-
-        [ForeignKey("Question")]
-        public string QuestionId { get; set; }
+        public int QuestionId { get; set; }
         public virtual TestQuestion Question { get; set; }
 
         public bool IsCorrect { get; set; }  // для SingleChoice

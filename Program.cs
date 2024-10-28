@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using UniPlatform.Models;
+using UniPlatform.DB;
 using UniPlatform.Services;
 
 var builder = WebApplication.CreateBuilder(args);

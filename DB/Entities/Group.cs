@@ -2,12 +2,13 @@
 
 namespace UniPlatform.Models
 {
-    // Клас для навчальних груп
     public class Group
     {
         public string Id { get; set; }
 
+
         public string Name { get; set; }
+        public int CourseNumber {  get; set; }
         public string DepartmentId { get; set; }
         public virtual Department Department { get; set; }
 

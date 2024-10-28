@@ -10,14 +10,14 @@ namespace UniPlatform.DB.Entities
             
         }
         [Key]
-        public string Id { get; set; }
+        public int Id { get; set; }
 
         [ForeignKey("TestAssignment")]
-        public string TestAssignmentId { get; set; }
+        public int TestAssignmentId { get; set; }
         public virtual TestAssignment TestAssignment { get; set; }
 
         [ForeignKey("Student")]
-        public string StudentId { get; set; }
+        public int StudentId { get; set; }
         public virtual Student Student { get; set; }
 
         public DateTime StartTime { get; set; }

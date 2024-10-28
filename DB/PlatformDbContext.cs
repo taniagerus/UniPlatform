@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using UniPlatform.DB.Entities;
-using UniPlatform.Models.TestModels;
+using UniPlatform.Models;
 
-namespace UniPlatform.Models
+namespace UniPlatform.DB
 {
-    public class PlatformDbContext : DbContext
-    { 
+    public class PlatformDbContext : IdentityDbContext
+    {
         public PlatformDbContext(DbContextOptions<PlatformDbContext> options) : base(options)
         {
         }
@@ -17,31 +17,28 @@ namespace UniPlatform.Models
         public DbSet<Lecturer> Lecturers { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Course> Courses { get; set; }
-        //////public DbSet<Grade> Grades { get; set; }
-        //public DbSet<StreamStudents> Streams { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<CourseGroup> CourseGroups { get; set; }
         public DbSet<CourseStudent> CourseStudents { get; set; }
 
         public DbSet<StudentGroup> StudentGroups { get; set; }
 
-        //public DbSet<TestCategory> TestCategories { get; set; }
-        //public DbSet<TestQuestion> TestQuestions { get; set; }
-        //public DbSet<TestOption> TestOptions { get; set; }
-        //public DbSet<GradingScheme> GradingSchemes { get; set; }
-        //public DbSet<TestAssignment> TestAssignments { get; set; }
-        ////public DbSet<TestAssignmentSettings> TestAssignmentSettings { get; set; }
-        //public DbSet<TestAttempt> TestAttempts { get; set; }
-        //public DbSet<StudentAnswer> StudentAnswers { get; set; }
+        public DbSet<TestCategory> TestCategories { get; set; }
+        public DbSet<TestQuestion> TestQuestions { get; set; }
+        public DbSet<TestOption> TestOptions { get; set; }
+
+        public DbSet<TestAssignment> TestAssignments { get; set; }
+        public DbSet<TestAttempt> TestAttempts { get; set; }
+        public DbSet<StudentAnswer> StudentAnswers { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             //ConfigureRolesSystem(modelBuilder);
-            //ConfigureTestingSystem(modelBuilder);
+            ConfigureTestingSystem(modelBuilder);
 
-          
+
         }
 
         //private void ConfigureRolesSystem(ModelBuilder modelBuilder)
@@ -145,42 +142,43 @@ namespace UniPlatform.Models
         //        .HasIndex(u => u.Email)
         //        .IsUnique();
         //}
-        //private void ConfigureTestingSystem(ModelBuilder modelBuilder)
-        //{
-        //    // TestQuestion - TestOption relationship
-        //    modelBuilder.Entity<TestQuestion>()
-        //        .HasMany(q => q.Options)
-        //        .WithOne(o => o.Question)
-        //        .HasForeignKey(o => o.QuestionId)
-        //        .OnDelete(DeleteBehavior.Cascade);
+        private void ConfigureTestingSystem(ModelBuilder modelBuilder)
+        {
+            //    // TestQuestion - TestOption relationship
+            //    modelBuilder.Entity<TestQuestion>()
+            //        .HasMany(q => q.Options)
+            //        .WithOne(o => o.Question)
+            //        .HasForeignKey(o => o.QuestionId)
+            //        .OnDelete(DeleteBehavior.Cascade);
 
-        //    // TestAssignment - TestQuestion many-to-many relationship
-        //    modelBuilder.Entity<TestAssignment>()
-        //        .HasMany(t => t.Questions)
-        //        .WithMany(q => q.TestAssignments)
-        //        .UsingEntity(j => j.ToTable("TestAssignmentQuestions"));
+            //    // TestAssignment - TestQuestion many-to-many relationship
+            modelBuilder.Entity<TestAssignment>()
+                .HasMany(t => t.Questions)
+                .WithMany(q => q.TestAssignments)
+                .UsingEntity(j => j.ToTable("TestAssignmentQuestions"));
 
-        //    // StudentAnswer - TestOption many-to-many relationship
-        //    modelBuilder.Entity<StudentAnswer>()
-        //        .HasMany(sa => sa.SelectedOptions)
-        //        .WithMany()
-        //        .UsingEntity(j => j.ToTable("StudentAnswerOptions"));
+            //    // StudentAnswer - TestOption many-to-many relationship
+            modelBuilder.Entity<StudentAnswer>()
+                    .HasMany(sa => sa.SelectedOptions)
+                    .WithMany()
+                    .UsingEntity(j => j.ToTable("StudentAnswerOptions"));
 
-        //    // GradingScheme unique constraint
-        //    modelBuilder.Entity<GradingScheme>()
-        //        .HasIndex(gs => new { gs.CourseId, gs.CategoryId, gs.Difficulty })
-        //        .IsUnique();
+            //    // GradingScheme unique constraint
+            //    modelBuilder.Entity<GradingScheme>()
+            //        .HasIndex(gs => new { gs.CourseId, gs.CategoryId, gs.Difficulty })
+            //        .IsUnique();
 
-        //    // TestAssignment constraints
-        //    modelBuilder.Entity<TestAssignment>()
-        //        .Property(ta => ta.MaxPoints)
-        //        .HasPrecision(6, 2);
+            //    // TestAssignment constraints
+            //    modelBuilder.Entity<TestAssignment>()
+            //        .Property(ta => ta.MaxPoints)
+            //        .HasPrecision(6, 2);
 
-           
-        //    // StudentAnswer constraints
-        //    modelBuilder.Entity<StudentAnswer>()
-        //        .Property(sa => sa.Points)
-        //        .HasPrecision(6, 2);
-        //}
+
+            //    // StudentAnswer constraints
+            //    modelBuilder.Entity<StudentAnswer>()
+            //        .Property(sa => sa.Points)
+            //        .HasPrecision(6, 2);
+            //}
+        }
     }
 }

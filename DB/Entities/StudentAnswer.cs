@@ -10,14 +10,14 @@ namespace UniPlatform.DB.Entities
             
         }
         [Key]
-        public string Id { get; set; }
+        public int Id { get; set; }
 
         [ForeignKey("TestAttempt")]
-        public string TestAttemptId { get; set; }
+        public int TestAttemptId { get; set; }
         public virtual TestAttempt TestAttempt { get; set; }
 
         [ForeignKey("Question")]
-        public string QuestionId { get; set; }
+        public int QuestionId { get; set; }
         public virtual TestQuestion Question { get; set; }
 
         public virtual ICollection<TestOption> SelectedOptions { get; set; } = new List<TestOption>();// для MultipleChoice

@@ -10,7 +10,7 @@ namespace UniPlatform.DB.Entities
             
         }
         [Key]
-        public string Id { get; set; }
+        public int Id { get; set; }
 
         [Required]
         public string QuestionText { get; set; }
@@ -19,7 +19,7 @@ namespace UniPlatform.DB.Entities
         public DifficultyLevel Difficulty { get; set; }
 
         [ForeignKey("Category")]
-        public string CategoryId { get; set; }
+        public int CategoryId { get; set; }
         public virtual TestCategory Category { get; set; }
 
         public virtual ICollection<TestOption> Options { get; set; } = new List<TestOption>();

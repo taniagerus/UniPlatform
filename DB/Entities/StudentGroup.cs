@@ -8,12 +8,12 @@ namespace UniPlatform.DB.Entities
         {
             
         }
-        public string Id { get; set; }
+        public int Id { get; set; }
 
-        public string StudentId { get; set; }
+        public int StudentId { get; set; }
         public virtual Student Student { get; set; }
 
-        public string GroupId { get; set; }
+        public int GroupId { get; set; }
         public virtual Group Group { get; set; }
 
         public DateTime JoinDate { get; set; }

@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using UniPlatform.DB.Entities;
 
-namespace UniPlatform.Models.DTO
+namespace UniPlatform.DTO
 {
     public class BaseRegistrationDTO
     {
@@ -50,5 +50,5 @@ namespace UniPlatform.Models.DTO
         // Специфічні поля для адміністратора, якщо потрібні
     }
 
-   
+
 }

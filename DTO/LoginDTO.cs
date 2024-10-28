@@ -1,4 +1,4 @@
-﻿namespace UniPlatform.Models.DTO
+﻿namespace UniPlatform.DTO
 {
     public class LoginDTO
     {

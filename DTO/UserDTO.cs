@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using UniPlatform.DB.Entities;
 
-namespace UniPlatform.Models.DTO
+namespace UniPlatform.DTO
 {
     public class UserDTO
     {

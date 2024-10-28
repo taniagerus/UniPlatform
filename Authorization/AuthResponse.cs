@@ -1,4 +1,4 @@
-﻿namespace UniPlatform.Models
+﻿namespace UniPlatform.Authorization
 {
     public class AuthResponse
     {

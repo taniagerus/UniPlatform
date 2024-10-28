@@ -10,12 +10,12 @@ namespace UniPlatform.DB.Entities
             
         }
         [Key]
-        public string Id { get; set; }
+        public int Id { get; set; }
 
         [Required]
         public string Name { get; set; }
         [ForeignKey("Course")]
-        public string CourseId { get; set; }
+        public int CourseId { get; set; }
         public virtual Course Course { get; set; }
 
         public virtual ICollection<TestQuestion> Questions { get; set; } = new List<TestQuestion>();
