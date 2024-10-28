@@ -1,0 +1,6 @@
+@UniPlatform_HostAddress = http://localhost:5067
+
+GET {{UniPlatform_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
