@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using UniPlatform.DB.Entities;
 using UniPlatform.Models;
 
 namespace UniPlatform.DB
 {
-    public class PlatformDbContext : IdentityDbContext
+    public class PlatformDbContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
         public PlatformDbContext(DbContextOptions<PlatformDbContext> options) : base(options)
         {
