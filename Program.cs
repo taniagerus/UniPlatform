@@ -7,14 +7,13 @@ using System.Text;
 using System.Text.Json.Serialization;
 using UniPlatform.DB;
 using UniPlatform.DB.Entities;
+using UniPlatform.Interfaces;
 using UniPlatform.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Додати контекст бази даних
 builder.Services.AddDbContext<PlatformDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DBCS")));
-builder.Services.AddScoped<TokenService, TokenService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Додати підтримку перетворення string на enum у JSON
 builder.Services.AddControllers().AddJsonOptions(opt =>

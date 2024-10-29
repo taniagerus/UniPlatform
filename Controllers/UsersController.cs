@@ -6,6 +6,7 @@ using UniPlatform.Authorization;
 using UniPlatform.DB.Entities;
 using UniPlatform.Services;
 using UniPlatform.DB;
+using UniPlatform.Interfaces;
 
 
 namespace uniplatform.controllers
@@ -13,14 +14,14 @@ namespace uniplatform.controllers
 
     [ApiController]
     [Route("/api/[controller]")]
-    //[ApiVersion("1.0")]
+
     public class UsersController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
         private readonly PlatformDbContext _context;
-        private readonly TokenService _tokenService;
+        private readonly ITokenService _tokenService;
 
-        public UsersController(UserManager<User> userManager, PlatformDbContext context, TokenService tokenService, ILogger<UsersController> logger)
+        public UsersController(UserManager<User> userManager, PlatformDbContext context, ITokenService tokenService, ILogger<UsersController> logger)
         {
             _userManager = userManager;
             _context = context;

@@ -3,10 +3,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using UniPlatform.DB.Entities;
+using UniPlatform.Interfaces;
 
 namespace UniPlatform.Services
 {
-    public class TokenService
+    public class TokenService: ITokenService
     {
         // Specify how long until the token expires
         private const int ExpirationMinutes = 30;
