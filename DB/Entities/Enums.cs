@@ -6,7 +6,8 @@
         Student,
         Assistant,
         Lecturer,
-        Administrator
+        Administrator,
+        User
     }
     public enum EducationLevelEnum
     {

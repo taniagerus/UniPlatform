@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Text.Json.Serialization;
 using UniPlatform.DB;
+using UniPlatform.DB.Entities;
 using UniPlatform.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,36 +14,96 @@ var builder = WebApplication.CreateBuilder(args);
 // Додати контекст бази даних
 builder.Services.AddDbContext<PlatformDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DBCS")));
+builder.Services.AddScoped<TokenService, TokenService>();
 
-// Додати налаштування JWT автентифікації
-builder.Services.AddAuthentication(options =>
+// Додати підтримку перетворення string на enum у JSON
+builder.Services.AddControllers().AddJsonOptions(opt =>
 {
+    opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+// Налаштування Identity
+builder.Services
+    .AddIdentity<User, IdentityRole<int>>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = false;
+        options.User.RequireUniqueEmail = true;
+        options.Password.RequireDigit = false;
+        options.Password.RequiredLength = 6;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = false;
+    })
+    .AddRoles<IdentityRole<int>>()
+    .AddEntityFrameworkStores<PlatformDbContext>();
+
+// Налаштування JWT
+var validIssuer = builder.Configuration.GetValue<string>("JwtTokenSettings:ValidIssuer");
+var validAudience = builder.Configuration.GetValue<string>("JwtTokenSettings:ValidAudience");
+var symmetricSecurityKey = builder.Configuration.GetValue<string>("JwtTokenSettings:SymmetricSecurityKey");
+
+builder.Services.AddAuthentication(options => {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
 {
-    options.TokenValidationParameters = new TokenValidationParameters
+    options.IncludeErrorDetails = true;
+    options.TokenValidationParameters = new TokenValidationParameters()
     {
+        ClockSkew = TimeSpan.Zero,
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        ValidIssuer = validIssuer,
+        ValidAudience = validAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(symmetricSecurityKey)
+        ),
     };
 });
 
-
-// Add services to the container
+// Додати служби для контролерів
 builder.Services.AddControllers();
-// Add Swagger services
-builder.Services.AddSwaggerGen(c =>
+
+// Налаштування Swagger
+builder.Services.AddSwaggerGen(option =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "Test API", Version = "v1" });
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
+    });
 });
-// Add authorization services
+
+// Додати авторизацію
 builder.Services.AddAuthorization();
+
+// Додати інші служби
+builder.Services.AddProblemDetails();
+//builder.Services.AddApiVersioning();
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -52,5 +115,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();

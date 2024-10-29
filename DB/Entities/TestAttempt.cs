@@ -12,11 +12,9 @@ namespace UniPlatform.DB.Entities
         [Key]
         public int Id { get; set; }
 
-        [ForeignKey("TestAssignment")]
         public int TestAssignmentId { get; set; }
         public virtual TestAssignment TestAssignment { get; set; }
 
-        [ForeignKey("Student")]
         public int StudentId { get; set; }
         public virtual Student Student { get; set; }
 
