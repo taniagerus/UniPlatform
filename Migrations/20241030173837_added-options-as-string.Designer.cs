@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using UniPlatform.DB;
@@ -11,9 +12,11 @@ using UniPlatform.DB;
 namespace UniPlatform.Migrations
 {
     [DbContext(typeof(PlatformDbContext))]
-    partial class PlatformDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241030173837_added-options-as-string")]
+    partial class addedoptionsasstring
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -465,10 +468,6 @@ namespace UniPlatform.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Options")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("QuestionText")
                         .IsRequired()
                         .HasColumnType("text");
@@ -865,7 +864,7 @@ namespace UniPlatform.Migrations
             modelBuilder.Entity("UniPlatform.DB.Entities.TestOption", b =>
                 {
                     b.HasOne("UniPlatform.DB.Entities.TestQuestion", "Question")
-                        .WithMany()
+                        .WithMany("Options")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -980,6 +979,11 @@ namespace UniPlatform.Migrations
             modelBuilder.Entity("UniPlatform.DB.Entities.TestCategory", b =>
                 {
                     b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("UniPlatform.DB.Entities.TestQuestion", b =>
+                {
+                    b.Navigation("Options");
                 });
 
             modelBuilder.Entity("UniPlatform.Models.Group", b =>

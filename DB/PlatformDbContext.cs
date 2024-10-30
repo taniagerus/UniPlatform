@@ -153,16 +153,16 @@ namespace UniPlatform.DB
             //        .OnDelete(DeleteBehavior.Cascade);
 
             //    // TestAssignment - TestQuestion many-to-many relationship
-            modelBuilder.Entity<TestAssignment>()
-                .HasMany(t => t.Questions)
-                .WithMany(q => q.TestAssignments)
-                .UsingEntity(j => j.ToTable("TestAssignmentQuestions"));
+            //modelBuilder.Entity<TestAssignment>()
+            //    .HasMany(t => t.Questions)
+            //    .WithMany(q => q.TestAssignments)
+            //    .UsingEntity(j => j.ToTable("TestAssignmentQuestions"));
 
-            //    // StudentAnswer - TestOption many-to-many relationship
-            modelBuilder.Entity<StudentAnswer>()
-                    .HasMany(sa => sa.SelectedOptions)
-                    .WithMany()
-                    .UsingEntity(j => j.ToTable("StudentAnswerOptions"));
+            ////    // StudentAnswer - TestOption many-to-many relationship
+            //modelBuilder.Entity<StudentAnswer>()
+            //        .HasMany(sa => sa.SelectedOptions)
+            //        .WithMany()
+            //        .UsingEntity(j => j.ToTable("StudentAnswerOptions"));
 
             //    // GradingScheme unique constraint
             //    modelBuilder.Entity<GradingScheme>()

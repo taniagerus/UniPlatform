@@ -14,15 +14,15 @@ namespace UniPlatform.DB.Entities
 
         [Required]
         public string QuestionText { get; set; }
-
+  
         public TestType Type { get; set; }
-        public DifficultyLevel Difficulty { get; set; }
+        //public DifficultyLevel Difficulty { get; set; }
 
-        [ForeignKey("Category")]
-        public int CategoryId { get; set; }
-        public virtual TestCategory Category { get; set; }
-
-        public virtual ICollection<TestOption> Options { get; set; } = new List<TestOption>();
-        public virtual ICollection<TestAssignment> TestAssignments { get; set; } = new List<TestAssignment>();
+        //[ForeignKey("Category")]
+        public string Category { get; set; }
+       public string CorrectAnswer { get; set; }
+        //public virtual TestCategory Category { get; set; }
+public string Options {  get; set; }
+        //public virtual ICollection<TestAssignment> TestAssignments { get; set; } = new List<TestAssignment>();
     }
 }
