@@ -84,9 +84,11 @@ namespace UniPlatform.Controllers
             {
                 QuestionText = testQuestion.QuestionText,
                 Category = testQuestion.Category,
-                CorrectAnswer = testQuestion.CorrectAnswer,
+                CorrectAnswer = testQuestion.Type == TestType.TextAnswer ? testQuestion.CorrectAnswer : "",
                 Type = testQuestion.Type,
-                TestOptions = testQuestion.TestOptions.Select(x => new TestOption { OptionText = x.OptionText, IsCorrect = x.IsCorrect }).ToList()
+                TestOptions = testQuestion.Type == TestType.SingleChoice || testQuestion.Type == TestType.MultipleChoice
+                                ? testQuestion.TestOptions.Select(x => new TestOption { OptionText = x.OptionText, IsCorrect = x.IsCorrect }).ToList()
+                                : []
 
             };
             _context.Questions.Add(result);
@@ -94,66 +96,7 @@ namespace UniPlatform.Controllers
 
             return CreatedAtAction("GetTestQuestion", new { id = result.Id }, testQuestion);
         }
-        [HttpPost, Route("TestAssignment")]
-        public async Task<ActionResult<Question>> PostTestAssignment(CreateTestAssignmentRequest test)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var questions = _testService.GetTestQuestionsForAssignment(test.Category, test.NumberOfQuestions);
-            var testConfiguration = new TestAssignment
-            {
-                Title = test.Title,
-                StudentId = test.StudentId,
-                StartTime = test.StartTime,
-                EndTime = test.EndTime,
-                TimeLimit = test.TimeLimit,
-                NumberOfQuestions = test.NumberOfQuestions,
-                Category = test.Category,
-            };
-
-            _context.TestAssignments.Add(testConfiguration);
-            await _context.SaveChangesAsync();
-
-            var testQuestions = questions.Select(x => new TestQuestion { QuestionId = x.Id, TestAssignmentId=testConfiguration.Id }).ToList();
-            _context.TestQuestions.AddRange(testQuestions);
-            await _context.SaveChangesAsync();
-
-            var result = new TestAssignmentViewModel
-            {
-                Id = testConfiguration.Id,
-                Title = testConfiguration.Title,
-                StudentId = testConfiguration.StudentId,
-                StartTime = testConfiguration.StartTime,
-                EndTime = testConfiguration.EndTime,
-                TimeLimit = testConfiguration.TimeLimit,
-                NumberOfQuestions = testConfiguration.NumberOfQuestions,
-                Category = testConfiguration.Category,
-                Questions = questions.Select(q => new QuestionViewModel
-                {
-                    Category = q.Category,
-                    CorrectAnswer = q.CorrectAnswer,
-                    QuestionText = q.QuestionText,
-                    Type = q.Type
-                }).ToList()
-            };
-
-            return CreatedAtAction("GetTestQuestion", new { id = testConfiguration.Id }, result);
-        }
-        [HttpGet]
-        public async Task<ActionResult<TestAssignment>> GetTestAssignment(int id)
-        {
-            var testAssignment = await _context.TestAssignments.FindAsync(id);
-
-            if (testAssignment == null)
-            {
-                return NotFound();
-            }
-           var questions = testAssignment.Questions.ToList();
-
-            return testAssignment;
-        }
+       
         // DELETE: api/TestQuestions/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTestQuestion(int id)

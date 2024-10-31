@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniPlatform.DB;
+using UniPlatform.Services;
 using UniPlatform.DB.Entities;
+using UniPlatform.ViewModels;
 
 namespace UniPlatform.Controllers
 {
@@ -15,11 +17,13 @@ namespace UniPlatform.Controllers
     public class TestAssignmentsController : ControllerBase
     {
         private readonly PlatformDbContext _context;
-
-        public TestAssignmentsController(PlatformDbContext context)
+        private TestService _testService;
+        public TestAssignmentsController(PlatformDbContext context, TestService testService)
         {
             _context = context;
+            _testService = testService;
         }
+
 
         // GET: api/TestAssignments
         [HttpGet]
@@ -28,9 +32,55 @@ namespace UniPlatform.Controllers
             return await _context.TestAssignments.ToListAsync();
         }
 
-        // GET: api/TestAssignments/5
+       
+        [HttpPost]
+        public async Task<ActionResult<Question>> PostTestAssignment(CreateTestAssignmentRequest test)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var questions = _testService.GetRandomTestQuestionsForAssignment(test.Category, test.NumberOfQuestions);
+            var testConfiguration = new TestAssignment
+            {
+                Title = test.Title,
+                StudentId = test.StudentId,
+                StartTime = test.StartTime,
+                EndTime = test.EndTime,
+                TimeLimit = test.TimeLimit,
+                NumberOfQuestions = test.NumberOfQuestions,
+                Category = test.Category,
+                Questions = questions.Select(x => new TestQuestion { QuestionId = x.Id }).ToList()
+            };
+
+            _context.TestAssignments.Add(testConfiguration);
+            await _context.SaveChangesAsync();
+           
+            var result = new TestAssignmentViewModel
+            {
+                Id = testConfiguration.Id,
+                Title = testConfiguration.Title,
+                StudentId = testConfiguration.StudentId,
+                StartTime = testConfiguration.StartTime,
+                EndTime = testConfiguration.EndTime,
+                TimeLimit = testConfiguration.TimeLimit,
+                NumberOfQuestions = testConfiguration.NumberOfQuestions,
+                Category = testConfiguration.Category,
+                Questions = questions.Select(q => new QuestionViewModel
+                {
+                    Category = q.Category,
+                    CorrectAnswer = q.CorrectAnswer,
+                    QuestionText = q.QuestionText,
+                    Type = q.Type
+                }).ToList()
+            };
+
+            return CreatedAtAction("GetTestQuestion", new { id = testConfiguration.Id }, result);
+        }
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<TestAssignment>> GetTestAssignment(int id)
+
+        public async Task<ActionResult<TestAssignmentViewModel>> GetTestAssignment(int id)
         {
             var testAssignment = await _context.TestAssignments.FindAsync(id);
 
@@ -38,8 +88,34 @@ namespace UniPlatform.Controllers
             {
                 return NotFound();
             }
+            var questions = _testService.GetQuestions(id);
+            var vm = new TestAssignmentViewModel()
+            {
+                Id = testAssignment.Id,
+                Title = testAssignment.Title,
+                StudentId = testAssignment.StudentId,
+                StartTime = testAssignment.StartTime,
+                EndTime = testAssignment.EndTime,
+                TimeLimit = testAssignment.TimeLimit,
+                Category=testAssignment.Category,
+                NumberOfQuestions = testAssignment.NumberOfQuestions,
+                Questions = questions.Select(q => new QuestionViewModel
+                {
+                    Id = q.Id,
+                    Category = q.Category,
+                    QuestionText = q.QuestionText,
+                    Type = q.Type,
+                    CorrectAnswer = q.CorrectAnswer, 
+                   
+                    TestOptions = _testService.GetTestOption(q).Select(t=>new OptionViewModel
+                    {
+                        Id = t.Id,
+                        OptionText = t.OptionText,
+                    }).ToList()
 
-            return testAssignment;
+                }).ToList()
+            };
+            return Ok(vm);
         }
 
         // PUT: api/TestAssignments/5
@@ -73,16 +149,7 @@ namespace UniPlatform.Controllers
             return NoContent();
         }
 
-        // POST: api/TestAssignments
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<TestAssignment>> PostTestAssignment(TestAssignment testAssignment)
-        {
-            _context.TestAssignments.Add(testAssignment);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetTestAssignment", new { id = testAssignment.Id }, testAssignment);
-        }
+       
 
         // DELETE: api/TestAssignments/5
         [HttpDelete("{id}")]

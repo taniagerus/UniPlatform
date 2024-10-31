@@ -22,7 +22,6 @@ namespace UniPlatform.DB.Entities
         public DateTime EndTime { get; set; }
         public int TimeLimit { get; set; }  
         public decimal? MaxPoints { get; set; }
-        public int CategoryId { get; set; }
         public string Category { get; set; }
         public int NumberOfQuestions { get; set; }
         public virtual ICollection<TestQuestion> Questions { get; set; }  = new List<TestQuestion>();
