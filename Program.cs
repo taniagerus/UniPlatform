@@ -14,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<PlatformDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DBCS")));
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<TestService, TestService>();
 
 // Додати підтримку перетворення string на enum у JSON
 builder.Services.AddControllers().AddJsonOptions(opt =>

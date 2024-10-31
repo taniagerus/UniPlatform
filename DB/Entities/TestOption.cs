@@ -15,7 +15,7 @@ namespace UniPlatform.DB.Entities
         [Required]
         public string OptionText { get; set; }
         public int QuestionId { get; set; }
-        public virtual TestQuestion Question { get; set; }
+        public virtual Question Question { get; set; }
 
         public bool IsCorrect { get; set; }  // для SingleChoice
         public int? CorrectOrder { get; set; }  // для Sequence

@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using Azure.Core;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniPlatform.DB;
 using UniPlatform.DB.Entities;
@@ -19,24 +11,25 @@ namespace UniPlatform.Controllers
     public class TestQuestionsController : ControllerBase
     {
         private readonly PlatformDbContext _context;
-
-        public TestQuestionsController(PlatformDbContext context)
+        private TestService _testService;
+        public TestQuestionsController(PlatformDbContext context, TestService testService)
         {
             _context = context;
+            _testService = testService;
         }
 
         // GET: api/TestQuestions
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TestQuestion>>> GetTestQuestions()
+        public async Task<ActionResult<IEnumerable<Question>>> GetTestQuestions(string category)
         {
-            return await _context.TestQuestions.ToListAsync();
+            return await _context.Questions.ToListAsync();
         }
 
         // GET: api/TestQuestions/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<TestQuestion>> GetTestQuestion(int id)
+        public async Task<ActionResult<Question>> GetTestQuestion(int id)
         {
-            var testQuestion = await _context.TestQuestions.FindAsync(id);
+            var testQuestion = await _context.Questions.FindAsync(id);
 
             if (testQuestion == null)
             {
@@ -46,10 +39,11 @@ namespace UniPlatform.Controllers
             return testQuestion;
         }
 
+
         // PUT: api/TestQuestions/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTestQuestion(int id, TestQuestion testQuestion)
+        public async Task<IActionResult> PutTestQuestion(int id, Question testQuestion)
         {
             if (id != testQuestion.Id)
             {
@@ -79,50 +73,87 @@ namespace UniPlatform.Controllers
 
         // POST: api/TestQuestions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        //public async Task<ActionResult<TestQuestion>> PostTestQuestion(QuestionVIewModel testQuestion)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //    var result = new TestQuestion
-        //    {
-        //        QuestionText = testQuestion.QuestionText,
-        //        Category = testQuestion.Category,
-        //        CorrectAnswer = testQuestion.CorrectAnswer,
-        //        Type = testQuestion.Type,
-        //        //Options = testQuestion.Options.Select(o => new TestOption
-        //        //{
-        //        //    OptionText = o.OptionText,
-        //        //}).ToList()
-        //    };
-        //    _context.TestQuestions.Add(result);
-        //    await _context.SaveChangesAsync();
-
-        //    return CreatedAtAction("GetTestQuestion", new { id = result.Id }, testQuestion);
-        //}
-        public async Task<ActionResult<TestQuestion>> PostTestQuestionWithMultipleOptions(QuestionVIewModel testQuestion)
+        [HttpPost, Route("TestQuestion")]
+        public async Task<ActionResult<Question>> PostTestQuestion(QuestionViewModel testQuestion)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-           var options =  testQuestion.Options;
-            var result = new TestQuestion
+            var result = new Question
             {
                 QuestionText = testQuestion.QuestionText,
                 Category = testQuestion.Category,
                 CorrectAnswer = testQuestion.CorrectAnswer,
                 Type = testQuestion.Type,
-                Options = string.Join(",", options)
-            }; 
-            _context.TestQuestions.Add(result);
+                TestOptions = testQuestion.TestOptions.Select(x => new TestOption { OptionText = x.OptionText, IsCorrect = x.IsCorrect }).ToList()
+
+            };
+            _context.Questions.Add(result);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetTestQuestion", new { id = result.Id }, testQuestion);
         }
+        [HttpPost, Route("TestAssignment")]
+        public async Task<ActionResult<Question>> PostTestAssignment(CreateTestAssignmentRequest test)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var questions = _testService.GetTestQuestionsForAssignment(test.Category, test.NumberOfQuestions);
+            var testConfiguration = new TestAssignment
+            {
+                Title = test.Title,
+                StudentId = test.StudentId,
+                StartTime = test.StartTime,
+                EndTime = test.EndTime,
+                TimeLimit = test.TimeLimit,
+                NumberOfQuestions = test.NumberOfQuestions,
+                Category = test.Category,
+            };
 
+            _context.TestAssignments.Add(testConfiguration);
+            await _context.SaveChangesAsync();
+
+            var testQuestions = questions.Select(x => new TestQuestion { QuestionId = x.Id, TestAssignmentId=testConfiguration.Id }).ToList();
+            _context.TestQuestions.AddRange(testQuestions);
+            await _context.SaveChangesAsync();
+
+            var result = new TestAssignmentViewModel
+            {
+                Id = testConfiguration.Id,
+                Title = testConfiguration.Title,
+                StudentId = testConfiguration.StudentId,
+                StartTime = testConfiguration.StartTime,
+                EndTime = testConfiguration.EndTime,
+                TimeLimit = testConfiguration.TimeLimit,
+                NumberOfQuestions = testConfiguration.NumberOfQuestions,
+                Category = testConfiguration.Category,
+                Questions = questions.Select(q => new QuestionViewModel
+                {
+                    Category = q.Category,
+                    CorrectAnswer = q.CorrectAnswer,
+                    QuestionText = q.QuestionText,
+                    Type = q.Type
+                }).ToList()
+            };
+
+            return CreatedAtAction("GetTestQuestion", new { id = testConfiguration.Id }, result);
+        }
+        [HttpGet]
+        public async Task<ActionResult<TestAssignment>> GetTestAssignment(int id)
+        {
+            var testAssignment = await _context.TestAssignments.FindAsync(id);
+
+            if (testAssignment == null)
+            {
+                return NotFound();
+            }
+           var questions = testAssignment.Questions.ToList();
+
+            return testAssignment;
+        }
         // DELETE: api/TestQuestions/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTestQuestion(int id)

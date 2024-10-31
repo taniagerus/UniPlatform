@@ -24,13 +24,15 @@ namespace UniPlatform.DB
 
         public DbSet<StudentGroup> StudentGroups { get; set; }
 
-        public DbSet<TestCategory> TestCategories { get; set; }
+        public DbSet<SelectedOptions> SelectedOptions { get; set; }
+
+        public DbSet<Question> Questions { get; set; }
         public DbSet<TestQuestion> TestQuestions { get; set; }
         public DbSet<TestOption> TestOptions { get; set; }
 
         public DbSet<TestAssignment> TestAssignments { get; set; }
-        public DbSet<TestAttempt> TestAttempts { get; set; }
-        public DbSet<StudentAnswer> StudentAnswers { get; set; }
+
+        public DbSet<Answer> StudentAnswers { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

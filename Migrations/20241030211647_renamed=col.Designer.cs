@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using UniPlatform.DB;
@@ -11,9 +12,11 @@ using UniPlatform.DB;
 namespace UniPlatform.Migrations
 {
     [DbContext(typeof(PlatformDbContext))]
-    partial class PlatformDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241030211647_renamed=col")]
+    partial class renamedcol
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -154,35 +157,6 @@ namespace UniPlatform.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("UniPlatform.DB.Entities.Answer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal?>("Points")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("QuestionId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TestAssignmentId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("TextAnswer")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QuestionId");
-
-                    b.HasIndex("TestAssignmentId");
-
-                    b.ToTable("StudentAnswers");
-                });
-
             modelBuilder.Entity("UniPlatform.DB.Entities.Course", b =>
                 {
                     b.Property<int>("Id")
@@ -307,15 +281,20 @@ namespace UniPlatform.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("TestCategoryId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("TestCategoryId");
+
                     b.ToTable("Questions");
                 });
 
-            modelBuilder.Entity("UniPlatform.DB.Entities.SelectedOptions", b =>
+            modelBuilder.Entity("UniPlatform.DB.Entities.StudentAnswer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -323,19 +302,25 @@ namespace UniPlatform.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal?>("Points")
+                        .HasColumnType("numeric");
+
                     b.Property<int>("QuestionId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("TestOptionId")
+                    b.Property<int>("TestAttemptId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("TextAnswer")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("QuestionId");
 
-                    b.HasIndex("TestOptionId");
+                    b.HasIndex("TestAttemptId");
 
-                    b.ToTable("SelectedOptions");
+                    b.ToTable("StudentAnswers");
                 });
 
             modelBuilder.Entity("UniPlatform.DB.Entities.StudentGroup", b =>
@@ -413,7 +398,7 @@ namespace UniPlatform.Migrations
                     b.ToTable("TestAssignments");
                 });
 
-            modelBuilder.Entity("UniPlatform.DB.Entities.TestOption", b =>
+            modelBuilder.Entity("UniPlatform.DB.Entities.TestAttempt", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -421,8 +406,59 @@ namespace UniPlatform.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AnswerId")
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("Score")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StudentId")
                         .HasColumnType("integer");
+
+                    b.Property<int>("TestAssignmentId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("TestAssignmentId");
+
+                    b.ToTable("TestAttempts");
+                });
+
+            modelBuilder.Entity("UniPlatform.DB.Entities.TestCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("TestCategories");
+                });
+
+            modelBuilder.Entity("UniPlatform.DB.Entities.TestOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("CorrectOrder")
                         .HasColumnType("integer");
@@ -440,11 +476,14 @@ namespace UniPlatform.Migrations
                     b.Property<int>("QuestionId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("StudentAnswerId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AnswerId");
-
                     b.HasIndex("QuestionId");
+
+                    b.HasIndex("StudentAnswerId");
 
                     b.ToTable("TestOptions");
                 });
@@ -701,25 +740,6 @@ namespace UniPlatform.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("UniPlatform.DB.Entities.Answer", b =>
-                {
-                    b.HasOne("UniPlatform.DB.Entities.Question", "Question")
-                        .WithMany()
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("UniPlatform.DB.Entities.TestAssignment", "TestAssignment")
-                        .WithMany("Answers")
-                        .HasForeignKey("TestAssignmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Question");
-
-                    b.Navigation("TestAssignment");
-                });
-
             modelBuilder.Entity("UniPlatform.DB.Entities.Course", b =>
                 {
                     b.HasOne("UniPlatform.DB.Entities.Assistant", null)
@@ -775,7 +795,14 @@ namespace UniPlatform.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("UniPlatform.DB.Entities.SelectedOptions", b =>
+            modelBuilder.Entity("UniPlatform.DB.Entities.Question", b =>
+                {
+                    b.HasOne("UniPlatform.DB.Entities.TestCategory", null)
+                        .WithMany("Questions")
+                        .HasForeignKey("TestCategoryId");
+                });
+
+            modelBuilder.Entity("UniPlatform.DB.Entities.StudentAnswer", b =>
                 {
                     b.HasOne("UniPlatform.DB.Entities.Question", "Question")
                         .WithMany()
@@ -783,15 +810,15 @@ namespace UniPlatform.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UniPlatform.DB.Entities.TestOption", "Option")
-                        .WithMany()
-                        .HasForeignKey("TestOptionId")
+                    b.HasOne("UniPlatform.DB.Entities.TestAttempt", "TestAttempt")
+                        .WithMany("Answers")
+                        .HasForeignKey("TestAttemptId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Option");
-
                     b.Navigation("Question");
+
+                    b.Navigation("TestAttempt");
                 });
 
             modelBuilder.Entity("UniPlatform.DB.Entities.StudentGroup", b =>
@@ -813,17 +840,47 @@ namespace UniPlatform.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("UniPlatform.DB.Entities.TestAttempt", b =>
+                {
+                    b.HasOne("UniPlatform.DB.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UniPlatform.DB.Entities.TestAssignment", "TestAssignment")
+                        .WithMany("Attempts")
+                        .HasForeignKey("TestAssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+
+                    b.Navigation("TestAssignment");
+                });
+
+            modelBuilder.Entity("UniPlatform.DB.Entities.TestCategory", b =>
+                {
+                    b.HasOne("UniPlatform.DB.Entities.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
             modelBuilder.Entity("UniPlatform.DB.Entities.TestOption", b =>
                 {
-                    b.HasOne("UniPlatform.DB.Entities.Answer", null)
-                        .WithMany("SelectedOptions")
-                        .HasForeignKey("AnswerId");
-
                     b.HasOne("UniPlatform.DB.Entities.Question", "Question")
                         .WithMany("TestOptions")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("UniPlatform.DB.Entities.StudentAnswer", null)
+                        .WithMany("SelectedOptions")
+                        .HasForeignKey("StudentAnswerId");
 
                     b.Navigation("Question");
                 });
@@ -899,11 +956,6 @@ namespace UniPlatform.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("UniPlatform.DB.Entities.Answer", b =>
-                {
-                    b.Navigation("SelectedOptions");
-                });
-
             modelBuilder.Entity("UniPlatform.DB.Entities.Course", b =>
                 {
                     b.Navigation("CourseGroups");
@@ -929,10 +981,25 @@ namespace UniPlatform.Migrations
                     b.Navigation("TestOptions");
                 });
 
+            modelBuilder.Entity("UniPlatform.DB.Entities.StudentAnswer", b =>
+                {
+                    b.Navigation("SelectedOptions");
+                });
+
             modelBuilder.Entity("UniPlatform.DB.Entities.TestAssignment", b =>
                 {
-                    b.Navigation("Answers");
+                    b.Navigation("Attempts");
 
+                    b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("UniPlatform.DB.Entities.TestAttempt", b =>
+                {
+                    b.Navigation("Answers");
+                });
+
+            modelBuilder.Entity("UniPlatform.DB.Entities.TestCategory", b =>
+                {
                     b.Navigation("Questions");
                 });
 
