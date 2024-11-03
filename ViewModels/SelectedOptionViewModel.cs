@@ -4,7 +4,7 @@ namespace UniPlatform.ViewModels
 {
     public class SelectedOptionViewModel
     {
-        public int QuestionId { get; set; }
+        //public int QuestionId { get; set; }
         public int TestOptionId { get; set; }
 
     }

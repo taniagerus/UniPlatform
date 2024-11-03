@@ -25,5 +25,7 @@ namespace UniPlatform.DB.Entities
         //public virtual TestCategory Category { get; set; }
   public string? Options {  get; set; }        
         public virtual ICollection<TestOption> TestOptions { get; set; } = new List<TestOption>();
+
+
     }
 }

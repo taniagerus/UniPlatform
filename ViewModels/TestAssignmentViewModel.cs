@@ -11,7 +11,7 @@ namespace UniPlatform.ViewModels
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public int TimeLimit { get; set; }
-        public string Category { get; set; }
+        public List<string> Categories { get; set; }
         public int NumberOfQuestions { get; set; }
     }
 
@@ -24,7 +24,7 @@ namespace UniPlatform.ViewModels
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public int TimeLimit { get; set; }
-        public string Category { get; set; }
+        public List<string> Categories { get; set; }
         public int NumberOfQuestions { get; set; }
         public List<QuestionViewModel> Questions { get; set; } = new List<QuestionViewModel>();
     }
