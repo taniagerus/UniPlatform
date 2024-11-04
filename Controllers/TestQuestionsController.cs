@@ -12,6 +12,7 @@ namespace UniPlatform.Controllers
     {
         private readonly PlatformDbContext _context;
         private TestService _testService;
+
         public TestQuestionsController(PlatformDbContext context, TestService testService)
         {
             _context = context;
@@ -38,7 +39,6 @@ namespace UniPlatform.Controllers
 
             return testQuestion;
         }
-
 
         // PUT: api/TestQuestions/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -73,30 +73,38 @@ namespace UniPlatform.Controllers
 
         // POST: api/TestQuestions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-            [HttpPost, Route("TestQuestion")]
-            public async Task<ActionResult<Question>> PostTestQuestion(QuestionViewModel testQuestion)
+        [HttpPost, Route("TestQuestion")]
+        public async Task<ActionResult<Question>> PostTestQuestion(QuestionViewModel testQuestion)
+        {
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-                var result = new Question
-                {
-                    QuestionText = testQuestion.QuestionText,
-                    Category = testQuestion.Category,
-                    CorrectAnswer = testQuestion.Type == TestType.TextAnswer ? testQuestion.CorrectAnswer : "",
-                    Type = testQuestion.Type,
-                    TestOptions = testQuestion.Type == TestType.SingleChoice || testQuestion.Type == TestType.MultipleChoice
-                                    ? testQuestion.TestOptions.Select(x => new TestOption { OptionText = x.OptionText, IsCorrect = x.IsCorrect }).ToList()
-                                    : []
-
-                };
-                _context.Questions.Add(result);
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction("GetTestQuestion", new { id = result.Id }, testQuestion);
+                return BadRequest(ModelState);
             }
-       
+            var result = new Question
+            {
+                QuestionText = testQuestion.QuestionText,
+                Category = testQuestion.Category,
+                CorrectAnswer =
+                    testQuestion.Type == TestType.TextAnswer ? testQuestion.CorrectAnswer : "",
+                Type = testQuestion.Type,
+                TestOptions =
+                    testQuestion.Type == TestType.SingleChoice
+                    || testQuestion.Type == TestType.MultipleChoice
+                        ? testQuestion
+                            .TestOptions.Select(x => new TestOption
+                            {
+                                OptionText = x.OptionText,
+                                IsCorrect = x.IsCorrect,
+                            })
+                            .ToList()
+                        : [],
+            };
+            _context.Questions.Add(result);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetTestQuestion", new { id = result.Id }, testQuestion);
+        }
+
         // DELETE: api/TestQuestions/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTestQuestion(int id)

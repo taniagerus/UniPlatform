@@ -1,6 +1,4 @@
 ﻿namespace UniPlatform.Services
 {
-    public class UserService
-    {
-    }
+    public class UserService { }
 }

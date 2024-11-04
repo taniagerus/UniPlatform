@@ -20,5 +20,4 @@ namespace UniPlatform.DB.Entities
             CourseGroups = new List<CourseGroup>();
         }
     }
-
 }

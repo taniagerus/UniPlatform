@@ -3,18 +3,16 @@
 namespace UniPlatform.ViewModels
 {
     public class CreateTestAssignmentRequest
-    { 
+    {
         public string Title { get; set; }
-
         public int StudentId { get; set; }
-
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public int TimeLimit { get; set; }
-        public List<string> Categories { get; set; }
-        public int NumberOfQuestions { get; set; }
-    }
 
+        public List<CategoryQuestionCountViewModel> CategoryQuestions { get; set; } =
+            new List<CategoryQuestionCountViewModel>();
+    }
 
     public class TestAssignmentViewModel
     {
@@ -24,7 +22,8 @@ namespace UniPlatform.ViewModels
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public int TimeLimit { get; set; }
-        public List<string> Categories { get; set; }
+        public List<CategoryQuestionCountViewModel> CategoryQuestions { get; set; } =
+            new List<CategoryQuestionCountViewModel>();
         public int NumberOfQuestions { get; set; }
         public List<QuestionViewModel> Questions { get; set; } = new List<QuestionViewModel>();
     }

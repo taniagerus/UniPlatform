@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using UniPlatform.DB.Entities;
+
 namespace UniPlatform.DTO
 {
     public class AssignRoleDTO

@@ -2,12 +2,10 @@
 
 namespace UniPlatform.DB.Entities
 {
-    public class User: IdentityUser<int>
+    public class User : IdentityUser<int>
     {
-        public User()
-        {
-             
-        }
+        public User() { }
+
         //public string Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -17,8 +15,12 @@ namespace UniPlatform.DB.Entities
         public DateTime DateCreated { get; set; }
         public DateTime LastUpdated { get; set; }
 
-
-        public void UpdateProfile(string email, string phoneNumber, string firstName, string lastName)
+        public void UpdateProfile(
+            string email,
+            string phoneNumber,
+            string firstName,
+            string lastName
+        )
         {
             Email = email;
             PhoneNumber = phoneNumber;

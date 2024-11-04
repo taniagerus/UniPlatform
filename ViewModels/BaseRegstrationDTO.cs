@@ -8,23 +8,27 @@ namespace UniPlatform.DTO
     {
         [Required]
         public string FirstName { get; set; }
+
         [Required]
         public string LastName { get; set; }
+
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
         [Required]
         [MinLength(6)]
         public string Password { get; set; }
-
     }
 
     public class StudentRegistrationDTO : BaseRegistrationDTO
     {
         [Required]
         public string StudentId { get; set; }
+
         [Required]
         public EducationLevelEnum EducationLevel { get; set; }
+
         [Required]
         public int DepartmentId { get; set; }
     }
@@ -33,6 +37,7 @@ namespace UniPlatform.DTO
     {
         [Required]
         public int DepartmentId { get; set; }
+
         // Додаткові поля специфічні для викладача
         public string AcademicDegree { get; set; }
     }
@@ -41,6 +46,7 @@ namespace UniPlatform.DTO
     {
         [Required]
         public int DepartmentId { get; set; }
+
         [Required]
         public int LecturerId { get; set; }
     }
@@ -49,6 +55,4 @@ namespace UniPlatform.DTO
     {
         // Специфічні поля для адміністратора, якщо потрібні
     }
-
-
 }

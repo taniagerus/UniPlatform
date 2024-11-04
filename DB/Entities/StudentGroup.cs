@@ -4,10 +4,8 @@ namespace UniPlatform.DB.Entities
 {
     public class StudentGroup
     {
-        public StudentGroup()
-        {
-            
-        }
+        public StudentGroup() { }
+
         public int Id { get; set; }
 
         public int StudentId { get; set; }

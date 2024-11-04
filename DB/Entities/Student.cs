@@ -2,7 +2,6 @@
 {
     public class Student : User
     {
-       
         public EducationLevelEnum EducationLevel { get; set; }
 
         //[ForeignKey("Department")]
@@ -10,7 +9,6 @@
         public virtual Department Department { get; set; }
         public virtual ICollection<CourseStudent> CourseStudents { get; set; }
         public virtual ICollection<StudentGroup> StudentGroups { get; set; }
-
 
         public Student()
         {

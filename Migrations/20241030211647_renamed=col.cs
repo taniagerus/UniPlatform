@@ -12,15 +12,12 @@ namespace UniPlatform.Migrations
         {
             migrationBuilder.DropForeignKey(
                 name: "FK_Questions_TestAssignments_TestAssignmentId",
-                table: "Questions");
+                table: "Questions"
+            );
 
-            migrationBuilder.DropIndex(
-                name: "IX_Questions_TestAssignmentId",
-                table: "Questions");
+            migrationBuilder.DropIndex(name: "IX_Questions_TestAssignmentId", table: "Questions");
 
-            migrationBuilder.DropColumn(
-                name: "TestAssignmentId",
-                table: "Questions");
+            migrationBuilder.DropColumn(name: "TestAssignmentId", table: "Questions");
         }
 
         /// <inheritdoc />
@@ -30,19 +27,22 @@ namespace UniPlatform.Migrations
                 name: "TestAssignmentId",
                 table: "Questions",
                 type: "integer",
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.CreateIndex(
                 name: "IX_Questions_TestAssignmentId",
                 table: "Questions",
-                column: "TestAssignmentId");
+                column: "TestAssignmentId"
+            );
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Questions_TestAssignments_TestAssignmentId",
                 table: "Questions",
                 column: "TestAssignmentId",
                 principalTable: "TestAssignments",
-                principalColumn: "Id");
+                principalColumn: "Id"
+            );
         }
     }
 }

@@ -2,56 +2,59 @@ using Microsoft.Identity.Client;
 using UniPlatform.DB;
 using UniPlatform.DB.Entities;
 
-
 public class TestService
 {
-	private readonly PlatformDbContext _context;
+    private readonly PlatformDbContext _context;
 
-	public TestService(PlatformDbContext context)
-	{
-		_context = context;
-	}
-
-    public List<Question> GetRandomTestQuestionsForAssignment(string category, int numberOfQuestions)
-	{
-        return _context.Questions
-       .Where(e => e.Category == category)
-	   .OrderBy(x=> Guid.NewGuid()).Take(numberOfQuestions)
-	   //.AsNoTracking()
-       .ToList(); 
-    }
-    public List<Question>  GetQuestions(int id)
+    public TestService(PlatformDbContext context)
     {
-       List <TestQuestion> testQuestions = GetTestQuestionsForAssignment(id);
+        _context = context;
+    }
+
+    public List<Question> GetRandomTestQuestionsForAssignment(
+        string category,
+        int numberOfQuestions
+    )
+    {
+        return _context
+            .Questions.Where(e => e.Category == category)
+            .OrderBy(x => Guid.NewGuid())
+            .Take(numberOfQuestions)
+            //.AsNoTracking()
+            .ToList();
+    }
+
+    public List<Question> GetQuestions(int id)
+    {
+        List<TestQuestion> testQuestions = GetTestQuestionsForAssignment(id);
         List<int> questionsIds = testQuestions.Select(t => t.QuestionId).ToList();
         List<Question> result = GetQuestionsByIdsFromDb(questionsIds);
-       return result;
-
+        return result;
     }
+
     public List<TestQuestion> GetTestQuestionsForAssignment(int id)
     {
-        return _context.TestQuestions
-            .Where (e => e.TestAssignmentId == id)
-            .ToList();
-      
+        return _context.TestQuestions.Where(e => e.TestAssignmentId == id).ToList();
     }
+
     //TestOptions = q.TestOptions.Select(t => new OptionViewModel
     //                {
     //                    Id = t.Id,
     //                    OptionText = t.OptionText,
     //                }).ToList()
-  
+
     public List<Question> GetQuestionsByIdsFromDb(List<int> ids)
     {
-        var questions =  _context.Set<Question>()
-                                        .Where(e => ids.Contains(e.Id))
-                                        .ToList();
-            return questions;
-        
+        var questions = _context.Set<Question>().Where(e => ids.Contains(e.Id)).ToList();
+        return questions;
     }
+
     public List<TestOption> GetTestOption(Question question)
     {
-       var testOptions= _context.Set<TestOption>() .Where(to => to.QuestionId == question.Id).ToList();
+        var testOptions = _context
+            .Set<TestOption>()
+            .Where(to => to.QuestionId == question.Id)
+            .ToList();
 
         return testOptions;
     }
@@ -61,7 +64,7 @@ public class TestService
     //                    Id = t.Id,
     //                    OptionText = t.OptionText,
     //                }).ToList()
-    // Додавання нової категорії тесту
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     //public void AddTestCategory(string name, string description, int courseId)
     //{
     //	var category = new TestCategory
@@ -74,7 +77,7 @@ public class TestService
     //	_context.SaveChanges();
     //}
 
-    //// Додавання нового питання в категорію
+    //// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     //public void AddTestQuestion(string questionText, TestType type, DifficultyLevel difficulty, int categoryId)
     //{
     //	var question = new TestQuestion
@@ -89,7 +92,7 @@ public class TestService
     //	_context.SaveChanges();
     //}
 
-    //// Додавання нового варіанту відповіді
+    //// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     //public void AddTestOption(string optionText, int questionId, bool isCorrect = false, int? correctOrder = null, string matchingPair = null)
     //{
     //	var option = new TestOption

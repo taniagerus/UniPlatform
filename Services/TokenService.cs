@@ -1,13 +1,13 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
 using UniPlatform.DB.Entities;
 using UniPlatform.Interfaces;
 
 namespace UniPlatform.Services
 {
-    public class TokenService: ITokenService
+    public class TokenService : ITokenService
     {
         // Specify how long until the token expires
         private const int ExpirationMinutes = 30;
@@ -21,11 +21,7 @@ namespace UniPlatform.Services
         public string CreateToken(User user)
         {
             var expiration = DateTime.UtcNow.AddMinutes(ExpirationMinutes);
-            var token = CreateJwtToken(
-                CreateClaims(user),
-                CreateSigningCredentials(),
-                expiration
-            );
+            var token = CreateJwtToken(CreateClaims(user), CreateSigningCredentials(), expiration);
             var tokenHandler = new JwtSecurityTokenHandler();
 
             _logger.LogInformation("JWT Token created");
@@ -33,11 +29,20 @@ namespace UniPlatform.Services
             return tokenHandler.WriteToken(token);
         }
 
-        private JwtSecurityToken CreateJwtToken(List<Claim> claims, SigningCredentials credentials,
-            DateTime expiration) =>
+        private JwtSecurityToken CreateJwtToken(
+            List<Claim> claims,
+            SigningCredentials credentials,
+            DateTime expiration
+        ) =>
             new(
-                new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["ValidIssuer"],
-                new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["ValidAudience"],
+                new ConfigurationBuilder()
+                    .AddJsonFile("appsettings.json")
+                    .Build()
+                    .GetSection("JwtTokenSettings")["ValidIssuer"],
+                new ConfigurationBuilder()
+                    .AddJsonFile("appsettings.json")
+                    .Build()
+                    .GetSection("JwtTokenSettings")["ValidAudience"],
                 claims,
                 expires: expiration,
                 signingCredentials: credentials
@@ -45,20 +50,26 @@ namespace UniPlatform.Services
 
         private List<Claim> CreateClaims(User user)
         {
-            var jwtSub = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["JwtRegisteredClaimNamesSub"];
+            var jwtSub = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build()
+                .GetSection("JwtTokenSettings")["JwtRegisteredClaimNamesSub"];
 
             try
             {
                 var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, jwtSub),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
-            };
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, jwtSub),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(
+                        JwtRegisteredClaimNames.Iat,
+                        DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()
+                    ),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Role, user.Role.ToString()),
+                };
 
                 return claims;
             }
@@ -71,12 +82,13 @@ namespace UniPlatform.Services
 
         private SigningCredentials CreateSigningCredentials()
         {
-            var symmetricSecurityKey = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["SymmetricSecurityKey"];
+            var symmetricSecurityKey = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build()
+                .GetSection("JwtTokenSettings")["SymmetricSecurityKey"];
 
             return new SigningCredentials(
-                new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(symmetricSecurityKey)
-                ),
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(symmetricSecurityKey)),
                 SecurityAlgorithms.HmacSha256
             );
         }

@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniPlatform.DB;
-using UniPlatform.Services;
 using UniPlatform.DB.Entities;
+using UniPlatform.Services;
 using UniPlatform.ViewModels;
 using static System.Net.Mime.MediaTypeNames;
-using System.ComponentModel.DataAnnotations;
 
 namespace UniPlatform.Controllers
 {
@@ -20,12 +20,12 @@ namespace UniPlatform.Controllers
     {
         private readonly PlatformDbContext _context;
         private TestService _testService;
+
         public TestAssignmentsController(PlatformDbContext context, TestService testService)
         {
             _context = context;
             _testService = testService;
         }
-
 
         // GET: api/TestAssignments
         [HttpGet]
@@ -34,21 +34,27 @@ namespace UniPlatform.Controllers
             return await _context.TestAssignments.ToListAsync();
         }
 
-
         [HttpPost]
-        public async Task<ActionResult<Question>> PostTestAssignment(CreateTestAssignmentRequest test)
+        public async Task<ActionResult<Question>> PostTestAssignment(
+            CreateTestAssignmentRequest test
+        )
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var categoryList = test.Categories;
             var questions = new List<Question>();
-            foreach (var category in categoryList)
+            foreach (var categoryQuestion in test.CategoryQuestions)
             {
-                questions.AddRange(_testService.GetRandomTestQuestionsForAssignment(category, test.NumberOfQuestions));
+                questions.AddRange(
+                    _testService.GetRandomTestQuestionsForAssignment(
+                        categoryQuestion.Category,
+                        categoryQuestion.QuestionCount
+                    )
+                );
             }
+
             var testConfiguration = new TestAssignment
             {
                 Title = test.Title,
@@ -56,13 +62,19 @@ namespace UniPlatform.Controllers
                 StartTime = test.StartTime,
                 EndTime = test.EndTime,
                 TimeLimit = test.TimeLimit,
-                NumberOfQuestions = test.NumberOfQuestions,
-                Questions = questions.Select(x => new TestQuestion { QuestionId = x.Id }).ToList()
+                NumberOfQuestions = test.CategoryQuestions.Sum(cq => cq.QuestionCount),
+                Questions = questions.Select(x => new TestQuestion { QuestionId = x.Id }).ToList(),
+                CategoryQuestionCounts = test
+                    .CategoryQuestions.Select(c => new CategoryQuestionCount
+                    {
+                        Category = c.Category,
+                        QuestionCount = c.QuestionCount,
+                    })
+                    .ToList(),
             };
-            testConfiguration.SetCategories(test.Categories);
+
             _context.TestAssignments.Add(testConfiguration);
             await _context.SaveChangesAsync();
-
             var result = new TestAssignmentViewModel
             {
                 Id = testConfiguration.Id,
@@ -72,20 +84,30 @@ namespace UniPlatform.Controllers
                 EndTime = testConfiguration.EndTime,
                 TimeLimit = testConfiguration.TimeLimit,
                 NumberOfQuestions = testConfiguration.NumberOfQuestions,
-                Categories = categoryList,
-                Questions = questions.Select(q => new QuestionViewModel
-                {
-                    Category = q.Category,
-                    CorrectAnswer = q.CorrectAnswer,
-                    QuestionText = q.QuestionText,
-                    Type = q.Type
-                }).ToList()
+                CategoryQuestions = testConfiguration
+                    .CategoryQuestionCounts.Select(cq => new CategoryQuestionCountViewModel
+                    {
+                        Category = cq.Category,
+                        QuestionCount = cq.QuestionCount,
+                    })
+                    .ToList(),
+                Questions = questions
+                    .Select(q => new QuestionViewModel
+                    {
+                        Category = q.Category,
+                        CorrectAnswer = q.CorrectAnswer,
+                        QuestionText = q.QuestionText,
+                        Type = q.Type,
+                    })
+                    .ToList(),
             };
-
             return CreatedAtAction("GetTestAssignment", new { id = testConfiguration.Id }, result);
         }
+
         [HttpPost, Route("TestToCheck")]
-        public async Task<ActionResult<TestToCheckViewModel>> SendTestToCheck(TestToCheckViewModel test)
+        public async Task<ActionResult<TestToCheckViewModel>> SendTestToCheck(
+            TestToCheckViewModel test
+        )
         {
             if (!ModelState.IsValid)
             {
@@ -99,13 +121,16 @@ namespace UniPlatform.Controllers
                 var answer = new Answer
                 {
                     QuestionId = ans.QuestionId,
-                    TestAssignmentId = test.TestAssignmentId
+                    TestAssignmentId = test.TestAssignmentId,
                 };
                 if (question.Type == TestType.TextAnswer)
                 {
                     answer.TextAnswer = ans.TextAnswer;
                 }
-                else if (question.Type == TestType.SingleChoice || question.Type == TestType.MultipleChoice)
+                else if (
+                    question.Type == TestType.SingleChoice
+                    || question.Type == TestType.MultipleChoice
+                )
                 {
                     answer.TextAnswer = "";
                     foreach (var option in ans.SelectedOptions)
@@ -113,7 +138,7 @@ namespace UniPlatform.Controllers
                         var selectedOption = new SelectedOptions
                         {
                             QuestionId = ans.QuestionId,
-                            TestOptionId = option.TestOptionId
+                            TestOptionId = option.TestOptionId,
                         };
                         selectedOptions.Add(selectedOption);
                     }
@@ -125,20 +150,18 @@ namespace UniPlatform.Controllers
 
                 answers.Add(answer);
             }
-                await _context.StudentAnswers.AddRangeAsync(answers);
-                await _context.SelectedOptions.AddRangeAsync(selectedOptions);
-                await _context.SaveChangesAsync();
-                return CreatedAtAction("GetTestToCheck", new { id = test.TestAssignmentId }, test);
-        
+            await _context.StudentAnswers.AddRangeAsync(answers);
+            await _context.SelectedOptions.AddRangeAsync(selectedOptions);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction("GetTestToCheck", new { id = test.TestAssignmentId }, test);
         }
-
 
         [HttpGet("TestToCheck/{id}")]
         public async Task<ActionResult<TestToCheckViewModel>> GetTestToCheck(int id)
         {
-            var test = await _context.TestAssignments
-                .Include(t => t.Answers)
-                    .ThenInclude(a => a.SelectedOptions)
+            var test = await _context
+                .TestAssignments.Include(t => t.Answers)
+                .ThenInclude(a => a.SelectedOptions)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
             if (test == null)
@@ -150,28 +173,28 @@ namespace UniPlatform.Controllers
             {
                 TestAssignmentId = test.Id,
                 StudentId = test.StudentId,
-                Answers = test.Answers.Select(x => new AnswerViewModel
-                {
-                    QuestionId = x.QuestionId,
-                    TextAnswer = x.TextAnswer,
-                    SelectedOptions = x.SelectedOptions.Select(so => new SelectedOptionViewModel
+                Answers = test
+                    .Answers.Select(x => new AnswerViewModel
                     {
-                        
-                        TestOptionId = so.Id
-                    }).ToList()
-                }).ToList()
+                        QuestionId = x.QuestionId,
+                        TextAnswer = x.TextAnswer,
+                        SelectedOptions = x
+                            .SelectedOptions.Select(so => new SelectedOptionViewModel
+                            {
+                                TestOptionId = so.Id,
+                            })
+                            .ToList(),
+                    })
+                    .ToList(),
             };
 
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-
         public async Task<ActionResult<TestAssignmentViewModel>> GetTestAssignment(int id)
         {
             var testAssignment = await _context.TestAssignments.FindAsync(id);
-
-            // Розділяємо категорії на список
             var categoryList = testAssignment.Categories.Split(';').ToList();
             if (testAssignment == null)
             {
@@ -186,23 +209,27 @@ namespace UniPlatform.Controllers
                 StartTime = testAssignment.StartTime,
                 EndTime = testAssignment.EndTime,
                 TimeLimit = testAssignment.TimeLimit,
-                Categories = testAssignment.GetCategories(),
+
                 NumberOfQuestions = testAssignment.NumberOfQuestions,
-                Questions = questions.Select(q => new QuestionViewModel
-                {
-                    Id = q.Id,
-                    Category = q.Category,
-                    QuestionText = q.QuestionText,
-                    Type = q.Type,
-                    CorrectAnswer = q.CorrectAnswer,
-
-                    TestOptions = _testService.GetTestOption(q).Select(t => new OptionViewModel
+                Questions = questions
+                    .Select(q => new QuestionViewModel
                     {
-                        Id = t.Id,
-                        OptionText = t.OptionText,
-                    }).ToList()
+                        Id = q.Id,
+                        Category = q.Category,
+                        QuestionText = q.QuestionText,
+                        Type = q.Type,
+                        CorrectAnswer = q.CorrectAnswer,
 
-                }).ToList()
+                        TestOptions = _testService
+                            .GetTestOption(q)
+                            .Select(t => new OptionViewModel
+                            {
+                                Id = t.Id,
+                                OptionText = t.OptionText,
+                            })
+                            .ToList(),
+                    })
+                    .ToList(),
             };
             return Ok(vm);
         }
@@ -237,8 +264,6 @@ namespace UniPlatform.Controllers
 
             return NoContent();
         }
-
-
 
         // DELETE: api/TestAssignments/5
         [HttpDelete("{id}")]

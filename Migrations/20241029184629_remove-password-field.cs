@@ -10,9 +10,7 @@ namespace UniPlatform.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Password",
-                table: "AspNetUsers");
+            migrationBuilder.DropColumn(name: "Password", table: "AspNetUsers");
 
             migrationBuilder.AlterColumn<string>(
                 name: "PhoneNumber",
@@ -20,7 +18,8 @@ namespace UniPlatform.Migrations
                 type: "text",
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "text");
+                oldType: "text"
+            );
 
             migrationBuilder.AlterColumn<string>(
                 name: "Email",
@@ -30,7 +29,8 @@ namespace UniPlatform.Migrations
                 nullable: true,
                 oldClrType: typeof(string),
                 oldType: "character varying(256)",
-                oldMaxLength: 256);
+                oldMaxLength: 256
+            );
         }
 
         /// <inheritdoc />
@@ -44,7 +44,8 @@ namespace UniPlatform.Migrations
                 defaultValue: "",
                 oldClrType: typeof(string),
                 oldType: "text",
-                oldNullable: true);
+                oldNullable: true
+            );
 
             migrationBuilder.AlterColumn<string>(
                 name: "Email",
@@ -56,14 +57,16 @@ namespace UniPlatform.Migrations
                 oldClrType: typeof(string),
                 oldType: "character varying(256)",
                 oldMaxLength: 256,
-                oldNullable: true);
+                oldNullable: true
+            );
 
             migrationBuilder.AddColumn<string>(
                 name: "Password",
                 table: "AspNetUsers",
                 type: "text",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: ""
+            );
         }
     }
 }

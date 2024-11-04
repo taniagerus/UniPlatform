@@ -1,14 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UniPlatform.DB.Entities
 {
     public class TestOption
     {
-        public TestOption()
-        {
-            
-        }
+        public TestOption() { }
+
         [Key]
         public int Id { get; set; }
 
@@ -17,8 +15,8 @@ namespace UniPlatform.DB.Entities
         public int QuestionId { get; set; }
         public virtual Question Question { get; set; }
 
-        public bool IsCorrect { get; set; }  // для SingleChoice
-        public int? CorrectOrder { get; set; }  // для Sequence
-        public string? MatchingPair { get; set; }  // для Matching
+        public bool IsCorrect { get; set; } // для SingleChoice
+        public int? CorrectOrder { get; set; } // для Sequence
+        public string? MatchingPair { get; set; } // для Matching
     }
 }

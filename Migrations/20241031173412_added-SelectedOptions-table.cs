@@ -15,10 +15,14 @@ namespace UniPlatform.Migrations
                 name: "SelectedOptions",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table
+                        .Column<int>(type: "integer", nullable: false)
+                        .Annotation(
+                            "Npgsql:ValueGenerationStrategy",
+                            NpgsqlValueGenerationStrategy.IdentityByDefaultColumn
+                        ),
                     QuestionId = table.Column<int>(type: "integer", nullable: false),
-                    TestOptionId = table.Column<int>(type: "integer", nullable: false)
+                    TestOptionId = table.Column<int>(type: "integer", nullable: false),
                 },
                 constraints: table =>
                 {
@@ -28,31 +32,35 @@ namespace UniPlatform.Migrations
                         column: x => x.QuestionId,
                         principalTable: "Questions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Cascade
+                    );
                     table.ForeignKey(
                         name: "FK_SelectedOptions_TestOptions_TestOptionId",
                         column: x => x.TestOptionId,
                         principalTable: "TestOptions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
 
             migrationBuilder.CreateIndex(
                 name: "IX_SelectedOptions_QuestionId",
                 table: "SelectedOptions",
-                column: "QuestionId");
+                column: "QuestionId"
+            );
 
             migrationBuilder.CreateIndex(
                 name: "IX_SelectedOptions_TestOptionId",
                 table: "SelectedOptions",
-                column: "TestOptionId");
+                column: "TestOptionId"
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "SelectedOptions");
+            migrationBuilder.DropTable(name: "SelectedOptions");
         }
     }
 }

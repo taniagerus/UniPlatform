@@ -9,9 +9,10 @@ namespace UniPlatform.DB.Entities
         public virtual ICollection<Assistant> Assistants { get; set; }
         public int DepartmentId { get; set; }
         public virtual Department Department { get; set; }
+
         public Lecturer()
         {
-           AssignedCourses = new List<Course>();
+            AssignedCourses = new List<Course>();
             Assistants = new List<Assistant>();
         }
     }

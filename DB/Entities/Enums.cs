@@ -1,22 +1,23 @@
 ﻿namespace UniPlatform.DB.Entities
 {
-
     public enum Role
     {
         Student,
         Assistant,
         Lecturer,
         Administrator,
-        User
+        User,
     }
+
     public enum EducationLevelEnum
     {
         Bachelor,
-        Master
+        Master,
     }
+
     public enum StatusEnum
     {
         Active,
-        Inactive
+        Inactive,
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using UniPlatform.ViewModels;
 
 namespace UniPlatform.DB.Entities
 {
@@ -26,19 +27,8 @@ namespace UniPlatform.DB.Entities
         public int NumberOfQuestions { get; set; }
         public virtual ICollection<TestQuestion> Questions { get; set; }  = new List<TestQuestion>();
         public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>();
-        // Метод для отримання категорій як списку
-        public List<string> GetCategories()
-        {
-            return string.IsNullOrEmpty(Categories)
-                ? new List<string>()
-                : new List<string>(Categories.Split(';'));
-        }
-
-        // Метод для встановлення категорій зі списку
-        public void SetCategories(List<string> categories)
-        {
-            Categories = string.Join(";", categories);
-        }
+        public virtual ICollection<CategoryQuestionCount> CategoryQuestionCounts { get; set; } = new List<CategoryQuestionCount>();
+      
     }
 
 }

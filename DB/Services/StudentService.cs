@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using UniPlatform.DB.Entities;
+
 public class StudentService : IStudentService
 {
     private readonly IGenericRepository<Student> _studentRepository;

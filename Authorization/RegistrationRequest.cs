@@ -1,5 +1,5 @@
-﻿using UniPlatform.DB.Entities;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using UniPlatform.DB.Entities;
 
 namespace UniPlatform.Authorization
 {

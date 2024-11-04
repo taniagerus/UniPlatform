@@ -15,15 +15,14 @@ namespace UniPlatform.Migrations
                 table: "TestQuestions",
                 type: "text",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: ""
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Options",
-                table: "TestQuestions");
+            migrationBuilder.DropColumn(name: "Options", table: "TestQuestions");
         }
     }
 }

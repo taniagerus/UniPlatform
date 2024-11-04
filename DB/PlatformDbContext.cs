@@ -8,9 +8,8 @@ namespace UniPlatform.DB
 {
     public class PlatformDbContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
-        public PlatformDbContext(DbContextOptions<PlatformDbContext> options) : base(options)
-        {
-        }
+        public PlatformDbContext(DbContextOptions<PlatformDbContext> options)
+            : base(options) { }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Student> Students { get; set; }
@@ -34,14 +33,11 @@ namespace UniPlatform.DB
 
         public DbSet<Answer> StudentAnswers { get; set; }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             //ConfigureRolesSystem(modelBuilder);
             ConfigureTestingSystem(modelBuilder);
-
-
         }
 
         //private void ConfigureRolesSystem(ModelBuilder modelBuilder)

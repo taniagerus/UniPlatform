@@ -10,14 +10,13 @@ namespace UniPlatform.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "CategoryId",
-                table: "TestAssignments");
+            migrationBuilder.DropColumn(name: "CategoryId", table: "TestAssignments");
 
             migrationBuilder.RenameColumn(
                 name: "Category",
                 table: "TestAssignments",
-                newName: "Categories");
+                newName: "Categories"
+            );
         }
 
         /// <inheritdoc />
@@ -26,14 +25,16 @@ namespace UniPlatform.Migrations
             migrationBuilder.RenameColumn(
                 name: "Categories",
                 table: "TestAssignments",
-                newName: "Category");
+                newName: "Category"
+            );
 
             migrationBuilder.AddColumn<int>(
                 name: "CategoryId",
                 table: "TestAssignments",
                 type: "integer",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 0
+            );
         }
     }
 }
