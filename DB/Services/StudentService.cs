@@ -17,7 +17,7 @@ public class StudentService : IStudentService
         return await _studentRepository.GetAllAsync();
     }
 
-    public async Task<Student> GetStudentByIdAsync(string id)
+    public async Task<Student> GetStudentByIdAsync(int id)
     {
         return await _studentRepository.GetByIdAsync(id);
     }
@@ -32,7 +32,7 @@ public class StudentService : IStudentService
         await _studentRepository.UpdateAsync(student);
     }
 
-    public async Task DeleteStudentAsync(string id)
+    public async Task DeleteStudentAsync(int id)
     {
         await _studentRepository.DeleteAsync(id);
     }

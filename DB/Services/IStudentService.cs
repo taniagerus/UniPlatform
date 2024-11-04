@@ -3,8 +3,8 @@ using UniPlatform.DB.Entities;
 public interface IStudentService
 {
     Task<IEnumerable<Student>> GetAllStudentsAsync();
-    Task<Student> GetStudentByIdAsync(string id);
+    Task<Student> GetStudentByIdAsync(int id);
     Task AddStudentAsync(Student student);
     Task UpdateStudentAsync(Student student);
-    Task DeleteStudentAsync(string id);
+    Task DeleteStudentAsync(int id);
 }

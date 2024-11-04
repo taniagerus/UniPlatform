@@ -10,27 +10,31 @@ namespace UniPlatform.Controllers
     [ApiController]
     public class TestQuestionsController : ControllerBase
     {
-        private readonly PlatformDbContext _context;
         private TestService _testService;
+        private readonly IGenericRepository<Question> _questionRepository;
 
-        public TestQuestionsController(PlatformDbContext context, TestService testService)
+        public TestQuestionsController(
+            TestService testService,
+            IGenericRepository<Question> questionRepository
+        )
         {
-            _context = context;
             _testService = testService;
+            _questionRepository = questionRepository;
         }
 
         // GET: api/TestQuestions
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Question>>> GetTestQuestions(string category)
         {
-            return await _context.Questions.ToListAsync();
+            var questions = await _questionRepository.GetAllAsync();
+            return Ok(questions);
         }
 
         // GET: api/TestQuestions/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Question>> GetTestQuestion(int id)
         {
-            var testQuestion = await _context.Questions.FindAsync(id);
+            var testQuestion = await _questionRepository.GetByIdAsync(id);
 
             if (testQuestion == null)
             {
@@ -50,23 +54,7 @@ namespace UniPlatform.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(testQuestion).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TestQuestionExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            await _questionRepository.UpdateAsync(testQuestion);
 
             return NoContent();
         }
@@ -99,8 +87,7 @@ namespace UniPlatform.Controllers
                             .ToList()
                         : [],
             };
-            _context.Questions.Add(result);
-            await _context.SaveChangesAsync();
+            await _questionRepository.AddAsync(result);
 
             return CreatedAtAction("GetTestQuestion", new { id = result.Id }, testQuestion);
         }
@@ -109,21 +96,15 @@ namespace UniPlatform.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTestQuestion(int id)
         {
-            var testQuestion = await _context.TestQuestions.FindAsync(id);
+            var testQuestion = await _questionRepository.GetByIdAsync(id);
             if (testQuestion == null)
             {
                 return NotFound();
             }
 
-            _context.TestQuestions.Remove(testQuestion);
-            await _context.SaveChangesAsync();
+            await _questionRepository.DeleteAsync(id);
 
             return NoContent();
-        }
-
-        private bool TestQuestionExists(int id)
-        {
-            return _context.TestQuestions.Any(e => e.Id == id);
         }
     }
 }

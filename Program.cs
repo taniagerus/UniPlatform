@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using UniPlatform.DB;
 using UniPlatform.DB.Entities;
+using UniPlatform.DB.Repositories;
 using UniPlatform.Interfaces;
 using UniPlatform.Services;
 
@@ -16,6 +17,11 @@ builder.Services.AddDbContext<PlatformDbContext>(options =>
 );
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<TestService, TestService>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<ITestAssignmentRepository, TestAssignmentRepository>();
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+
+//builder.Services.AddScoped<IGenericRepository<T>, GenericRepository<T>();
 
 // ������ �������� ������������ string �� enum � JSON
 builder

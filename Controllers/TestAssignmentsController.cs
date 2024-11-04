@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniPlatform.DB;
 using UniPlatform.DB.Entities;
+using UniPlatform.DB.Repositories;
 using UniPlatform.Services;
 using UniPlatform.ViewModels;
 using static System.Net.Mime.MediaTypeNames;
@@ -18,20 +19,36 @@ namespace UniPlatform.Controllers
     [ApiController]
     public class TestAssignmentsController : ControllerBase
     {
-        private readonly PlatformDbContext _context;
         private TestService _testService;
+        private readonly IGenericRepository<TestAssignment> _testRepository;
+        private readonly IGenericRepository<Question> _questionRepository;
+        private readonly IGenericRepository<Answer> _answerRepository;
+        private readonly IGenericRepository<SelectedOptions> _selectedOptionsRepository;
+        private readonly ITestAssignmentRepository _testAssignmentRepository;
 
-        public TestAssignmentsController(PlatformDbContext context, TestService testService)
+        public TestAssignmentsController(
+            TestService testService,
+            IGenericRepository<TestAssignment> testRepository,
+            IGenericRepository<Question> questionRepository,
+            IGenericRepository<Answer> answerRepository,
+            IGenericRepository<SelectedOptions> selectedOptionsRepository,
+            ITestAssignmentRepository testAssignmentRepository
+        )
         {
-            _context = context;
             _testService = testService;
+            _testRepository = testRepository;
+            _questionRepository = questionRepository;
+            _answerRepository = answerRepository;
+            _selectedOptionsRepository = selectedOptionsRepository;
+            _testAssignmentRepository = testAssignmentRepository;
         }
 
         // GET: api/TestAssignments
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TestAssignment>>> GetTestAssignments()
         {
-            return await _context.TestAssignments.ToListAsync();
+            var result = await _testRepository.GetAllAsync();
+            return Ok(result);
         }
 
         [HttpPost]
@@ -48,7 +65,7 @@ namespace UniPlatform.Controllers
             foreach (var categoryQuestion in test.CategoryQuestions)
             {
                 questions.AddRange(
-                    _testService.GetRandomTestQuestionsForAssignment(
+                    await _testService.GetRandomTestQuestionsForAssignment(
                         categoryQuestion.Category,
                         categoryQuestion.QuestionCount
                     )
@@ -64,17 +81,13 @@ namespace UniPlatform.Controllers
                 TimeLimit = test.TimeLimit,
                 NumberOfQuestions = test.CategoryQuestions.Sum(cq => cq.QuestionCount),
                 Questions = questions.Select(x => new TestQuestion { QuestionId = x.Id }).ToList(),
-                CategoryQuestionCounts = test
-                    .CategoryQuestions.Select(c => new CategoryQuestionCount
-                    {
-                        Category = c.Category,
-                        QuestionCount = c.QuestionCount,
-                    })
-                    .ToList(),
+                Categories = string.Join(
+                    ";",
+                    test.CategoryQuestions.Select(x => x.Category).Distinct()
+                ),
             };
 
-            _context.TestAssignments.Add(testConfiguration);
-            await _context.SaveChangesAsync();
+            await _testRepository.AddAsync(testConfiguration);
             var result = new TestAssignmentViewModel
             {
                 Id = testConfiguration.Id,
@@ -84,13 +97,7 @@ namespace UniPlatform.Controllers
                 EndTime = testConfiguration.EndTime,
                 TimeLimit = testConfiguration.TimeLimit,
                 NumberOfQuestions = testConfiguration.NumberOfQuestions,
-                CategoryQuestions = testConfiguration
-                    .CategoryQuestionCounts.Select(cq => new CategoryQuestionCountViewModel
-                    {
-                        Category = cq.Category,
-                        QuestionCount = cq.QuestionCount,
-                    })
-                    .ToList(),
+
                 Questions = questions
                     .Select(q => new QuestionViewModel
                     {
@@ -117,7 +124,7 @@ namespace UniPlatform.Controllers
             var selectedOptions = new List<SelectedOptions>();
             foreach (var ans in test.Answers)
             {
-                var question = await _context.Questions.FindAsync(ans.QuestionId);
+                var question = await _questionRepository.GetByIdAsync(ans.QuestionId);
                 var answer = new Answer
                 {
                     QuestionId = ans.QuestionId,
@@ -150,19 +157,15 @@ namespace UniPlatform.Controllers
 
                 answers.Add(answer);
             }
-            await _context.StudentAnswers.AddRangeAsync(answers);
-            await _context.SelectedOptions.AddRangeAsync(selectedOptions);
-            await _context.SaveChangesAsync();
+            await _answerRepository.AddManyAsync(answers);
+            await _selectedOptionsRepository.AddManyAsync(selectedOptions);
             return CreatedAtAction("GetTestToCheck", new { id = test.TestAssignmentId }, test);
         }
 
         [HttpGet("TestToCheck/{id}")]
         public async Task<ActionResult<TestToCheckViewModel>> GetTestToCheck(int id)
         {
-            var test = await _context
-                .TestAssignments.Include(t => t.Answers)
-                .ThenInclude(a => a.SelectedOptions)
-                .FirstOrDefaultAsync(t => t.Id == id);
+            var test = await _testAssignmentRepository.GetTestByIdAsync(id);
 
             if (test == null)
             {
@@ -194,7 +197,7 @@ namespace UniPlatform.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<TestAssignmentViewModel>> GetTestAssignment(int id)
         {
-            var testAssignment = await _context.TestAssignments.FindAsync(id);
+            var testAssignment = await _testRepository.GetByIdAsync(id);
             var categoryList = testAssignment.Categories.Split(';').ToList();
             if (testAssignment == null)
             {
@@ -244,46 +247,23 @@ namespace UniPlatform.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(testAssignment).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TestAssignmentExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            await _testRepository.UpdateAsync(testAssignment);
+            return Ok(testAssignment);
         }
 
         // DELETE: api/TestAssignments/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTestAssignment(int id)
         {
-            var testAssignment = await _context.TestAssignments.FindAsync(id);
+            var testAssignment = await _testRepository.GetByIdAsync(id);
             if (testAssignment == null)
             {
                 return NotFound();
             }
 
-            _context.TestAssignments.Remove(testAssignment);
-            await _context.SaveChangesAsync();
+            _testRepository.DeleteAsync(testAssignment.Id);
 
             return NoContent();
-        }
-
-        private bool TestAssignmentExists(int id)
-        {
-            return _context.TestAssignments.Any(e => e.Id == id);
         }
     }
 }

@@ -1,27 +1,33 @@
 using Microsoft.Identity.Client;
 using UniPlatform.DB;
 using UniPlatform.DB.Entities;
+using UniPlatform.DB.Repositories;
 
 public class TestService
 {
     private readonly PlatformDbContext _context;
+    private readonly IGenericRepository<Question> _genericRepository;
+    private readonly IQuestionRepository _questionRepository;
 
-    public TestService(PlatformDbContext context)
+    public TestService(
+        PlatformDbContext context,
+        IGenericRepository<Question> generic,
+        IQuestionRepository questionRepository
+    )
     {
         _context = context;
+        _genericRepository = generic;
+        _questionRepository = questionRepository;
     }
 
-    public List<Question> GetRandomTestQuestionsForAssignment(
+    public async Task<List<Question>> GetRandomTestQuestionsForAssignment(
         string category,
         int numberOfQuestions
     )
     {
-        return _context
-            .Questions.Where(e => e.Category == category)
-            .OrderBy(x => Guid.NewGuid())
-            .Take(numberOfQuestions)
-            //.AsNoTracking()
-            .ToList();
+        return (
+            await _questionRepository.GetRandomTestQuestionsAsync(category, numberOfQuestions)
+        ).ToList();
     }
 
     public List<Question> GetQuestions(int id)
