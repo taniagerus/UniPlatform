@@ -79,6 +79,7 @@ builder
 
 // ������ ������ ��� ����������
 builder.Services.AddControllers();
+builder.Services.AddAutoMapper(typeof(Program));
 
 // ������������ Swagger
 builder.Services.AddSwaggerGen(option =>

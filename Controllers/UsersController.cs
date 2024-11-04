@@ -1,4 +1,5 @@
 ﻿using System.Web.Http.ModelBinding;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using UniPlatform.Authorization;
@@ -16,17 +17,20 @@ namespace uniplatform.controllers
         private readonly UserManager<User> _userManager;
         private readonly PlatformDbContext _context;
         private readonly ITokenService _tokenService;
+        private readonly IMapper _mapper;
 
         public UsersController(
             UserManager<User> userManager,
             PlatformDbContext context,
             ITokenService tokenService,
-            ILogger<UsersController> logger
+            ILogger<UsersController> logger,
+            IMapper mapper
         )
         {
             _userManager = userManager;
             _context = context;
             _tokenService = tokenService;
+            _mapper = mapper;
         }
 
         [HttpPost]
@@ -39,25 +43,14 @@ namespace uniplatform.controllers
             }
 
             var result = await _userManager.CreateAsync(
-                new User
-                {
-                    UserName = request.UserName,
-                    FirstName = request.FirstName,
-                    LastName = request.LastName,
-                    Email = request.Email,
-                    Role = request.Role,
-                },
+                _mapper.Map<User>(request),
                 request.Password
             );
 
             if (result.Succeeded)
             {
                 request.Password = "";
-                return CreatedAtAction(
-                    nameof(Register),
-                    new { email = request.Email, role = request.Role },
-                    request
-                );
+                return CreatedAtAction(nameof(Register), request);
             }
 
             foreach (var error in result.Errors)

@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using UniPlatform.DB;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using UniPlatform.DB.Entities;
 using UniPlatform.ViewModels;
 
@@ -10,16 +10,19 @@ namespace UniPlatform.Controllers
     [ApiController]
     public class TestQuestionsController : ControllerBase
     {
-        private TestService _testService;
+        private readonly TestService _testService;
+        private readonly IMapper _mapper;
         private readonly IGenericRepository<Question> _questionRepository;
 
         public TestQuestionsController(
             TestService testService,
-            IGenericRepository<Question> questionRepository
+            IGenericRepository<Question> questionRepository,
+            IMapper mapper
         )
         {
             _testService = testService;
             _questionRepository = questionRepository;
+            _mapper = mapper;
         }
 
         // GET: api/TestQuestions
@@ -62,31 +65,15 @@ namespace UniPlatform.Controllers
         // POST: api/TestQuestions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost, Route("TestQuestion")]
+        [Authorize(Roles = "Lecturer")]
         public async Task<ActionResult<Question>> PostTestQuestion(QuestionViewModel testQuestion)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var result = new Question
-            {
-                QuestionText = testQuestion.QuestionText,
-                Category = testQuestion.Category,
-                CorrectAnswer =
-                    testQuestion.Type == TestType.TextAnswer ? testQuestion.CorrectAnswer : "",
-                Type = testQuestion.Type,
-                TestOptions =
-                    testQuestion.Type == TestType.SingleChoice
-                    || testQuestion.Type == TestType.MultipleChoice
-                        ? testQuestion
-                            .TestOptions.Select(x => new TestOption
-                            {
-                                OptionText = x.OptionText,
-                                IsCorrect = x.IsCorrect,
-                            })
-                            .ToList()
-                        : [],
-            };
+            var result = _mapper.Map<QuestionViewModel, Question>(testQuestion);
+
             await _questionRepository.AddAsync(result);
 
             return CreatedAtAction("GetTestQuestion", new { id = result.Id }, testQuestion);

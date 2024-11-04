@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UniPlatform.DB;
 using UniPlatform.DB.Entities;
 using UniPlatform.DB.Repositories;
-using UniPlatform.Services;
 using UniPlatform.ViewModels;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace UniPlatform.Controllers
 {
@@ -20,6 +13,8 @@ namespace UniPlatform.Controllers
     public class TestAssignmentsController : ControllerBase
     {
         private TestService _testService;
+        private readonly IMapper _mapper;
+
         private readonly IGenericRepository<TestAssignment> _testRepository;
         private readonly IGenericRepository<Question> _questionRepository;
         private readonly IGenericRepository<Answer> _answerRepository;
@@ -32,7 +27,8 @@ namespace UniPlatform.Controllers
             IGenericRepository<Question> questionRepository,
             IGenericRepository<Answer> answerRepository,
             IGenericRepository<SelectedOptions> selectedOptionsRepository,
-            ITestAssignmentRepository testAssignmentRepository
+            ITestAssignmentRepository testAssignmentRepository,
+            IMapper mapper
         )
         {
             _testService = testService;
@@ -41,10 +37,12 @@ namespace UniPlatform.Controllers
             _answerRepository = answerRepository;
             _selectedOptionsRepository = selectedOptionsRepository;
             _testAssignmentRepository = testAssignmentRepository;
+            _mapper = mapper;
         }
 
         // GET: api/TestAssignments
         [HttpGet]
+        [Authorize(Roles = "Lecturer")]
         public async Task<ActionResult<IEnumerable<TestAssignment>>> GetTestAssignments()
         {
             var result = await _testRepository.GetAllAsync();
@@ -52,6 +50,7 @@ namespace UniPlatform.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Lecturer")]
         public async Task<ActionResult<Question>> PostTestAssignment(
             CreateTestAssignmentRequest test
         )
@@ -88,26 +87,26 @@ namespace UniPlatform.Controllers
             };
 
             await _testRepository.AddAsync(testConfiguration);
-            var result = new TestAssignmentViewModel
-            {
-                Id = testConfiguration.Id,
-                Title = testConfiguration.Title,
-                StudentId = testConfiguration.StudentId,
-                StartTime = testConfiguration.StartTime,
-                EndTime = testConfiguration.EndTime,
-                TimeLimit = testConfiguration.TimeLimit,
-                NumberOfQuestions = testConfiguration.NumberOfQuestions,
 
-                Questions = questions
-                    .Select(q => new QuestionViewModel
-                    {
-                        Category = q.Category,
-                        CorrectAnswer = q.CorrectAnswer,
-                        QuestionText = q.QuestionText,
-                        Type = q.Type,
-                    })
-                    .ToList(),
-            };
+            var result = _mapper.Map<TestAssignment, TestAssignmentViewModel>(testConfiguration);
+
+            result.Questions = questions
+                .Select(q => _mapper.Map<Question, QuestionViewModel>(q))
+                .ToList();
+
+            //var result = new TestAssignmentViewModel
+            //{
+            //    Id = testConfiguration.Id,
+            //    Title = testConfiguration.Title,
+            //    StudentId = testConfiguration.StudentId,
+            //    StartTime = testConfiguration.StartTime,
+            //    EndTime = testConfiguration.EndTime,
+            //    TimeLimit = testConfiguration.TimeLimit,
+            //    NumberOfQuestions = testConfiguration.NumberOfQuestions,
+            //    Questions = questions
+            //        .Select(q => _mapper.Map<Question, QuestionViewModel>(q))
+            //        .ToList(),
+            //};
             return CreatedAtAction("GetTestAssignment", new { id = testConfiguration.Id }, result);
         }
 
@@ -225,11 +224,7 @@ namespace UniPlatform.Controllers
 
                         TestOptions = _testService
                             .GetTestOption(q)
-                            .Select(t => new OptionViewModel
-                            {
-                                Id = t.Id,
-                                OptionText = t.OptionText,
-                            })
+                            .Select(x => _mapper.Map<TestOption, OptionViewModel>(x))
                             .ToList(),
                     })
                     .ToList(),
@@ -240,6 +235,7 @@ namespace UniPlatform.Controllers
         // PUT: api/TestAssignments/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Lecturer")]
         public async Task<IActionResult> PutTestAssignment(int id, TestAssignment testAssignment)
         {
             if (id != testAssignment.Id)
