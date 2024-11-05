@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using UniPlatform.ViewModels;
 
 namespace UniPlatform.DB.Entities
 {
@@ -18,10 +16,12 @@ namespace UniPlatform.DB.Entities
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public int TimeLimit { get; set; }
-        public decimal? MaxPoints { get; set; }
+        public int? MaxPoints { get; set; }
         public string Categories { get; set; }
         public int NumberOfQuestions { get; set; }
         public virtual ICollection<TestQuestion> Questions { get; set; } = new List<TestQuestion>();
         public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>();
+        public virtual ICollection<TestAttempt> TestAttempts { get; set; } =
+            new List<TestAttempt>();
     }
 }

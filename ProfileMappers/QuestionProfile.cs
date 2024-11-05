@@ -8,9 +8,7 @@ namespace UniPlatform.ProfileMappers
     {
         public QuestionProfile()
         {
-            CreateMap<TestOption, OptionViewModel>()
-                .ForMember(dest => dest.IsCorrect, opt => opt.MapFrom(src => false))
-                .ReverseMap();
+            CreateMap<TestOption, OptionViewModel>().ReverseMap();
 
             CreateMap<Question, QuestionViewModel>();
 

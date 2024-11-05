@@ -18,7 +18,7 @@ namespace UniPlatform.Controllers
         private readonly IGenericRepository<TestAssignment> _testRepository;
         private readonly IGenericRepository<Question> _questionRepository;
         private readonly IGenericRepository<Answer> _answerRepository;
-        private readonly IGenericRepository<SelectedOptions> _selectedOptionsRepository;
+        private readonly IGenericRepository<SelectedOption> _selectedOptionsRepository;
         private readonly ITestAssignmentRepository _testAssignmentRepository;
 
         public TestAssignmentsController(
@@ -26,7 +26,7 @@ namespace UniPlatform.Controllers
             IGenericRepository<TestAssignment> testRepository,
             IGenericRepository<Question> questionRepository,
             IGenericRepository<Answer> answerRepository,
-            IGenericRepository<SelectedOptions> selectedOptionsRepository,
+            IGenericRepository<SelectedOption> selectedOptionsRepository,
             ITestAssignmentRepository testAssignmentRepository,
             IMapper mapper
         )
@@ -111,125 +111,54 @@ namespace UniPlatform.Controllers
         }
 
         [HttpPost, Route("TestToCheck")]
-        public async Task<ActionResult<TestToCheckViewModel>> SendTestToCheck(
-            TestToCheckViewModel test
-        )
+        [Authorize(Roles = "Student")]
+        public async Task<ActionResult<BaseResult<int>>> SendTestToCheck(TestToCheckViewModel test)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var answers = new List<Answer>();
-            var selectedOptions = new List<SelectedOptions>();
-            foreach (var ans in test.Answers)
-            {
-                var question = await _questionRepository.GetByIdAsync(ans.QuestionId);
-                var answer = new Answer
-                {
-                    QuestionId = ans.QuestionId,
-                    TestAssignmentId = test.TestAssignmentId,
-                };
-                if (question.Type == TestType.TextAnswer)
-                {
-                    answer.TextAnswer = ans.TextAnswer;
-                }
-                else if (
-                    question.Type == TestType.SingleChoice
-                    || question.Type == TestType.MultipleChoice
-                )
-                {
-                    answer.TextAnswer = "";
-                    foreach (var option in ans.SelectedOptions)
-                    {
-                        var selectedOption = new SelectedOptions
-                        {
-                            QuestionId = ans.QuestionId,
-                            TestOptionId = option.TestOptionId,
-                        };
-                        selectedOptions.Add(selectedOption);
-                    }
-                }
-                else
-                {
-                    return BadRequest($"Unsupported question type for question {ans.QuestionId}");
-                }
 
-                answers.Add(answer);
+            var result = await _testService.CalculateScore(test);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Error);
             }
-            await _answerRepository.AddManyAsync(answers);
-            await _selectedOptionsRepository.AddManyAsync(selectedOptions);
-            return CreatedAtAction("GetTestToCheck", new { id = test.TestAssignmentId }, test);
+
+            return CreatedAtAction(
+                nameof(GetTestAssignmentForStudent),
+                new { id = test.TestAssignmentId },
+                result.Data
+            );
         }
 
-        [HttpGet("TestToComplete/{id}")]
-        public async Task<ActionResult<TestToCheckViewModel>> TestToComplete(int id)
+        [HttpGet("StudentTestAssignment/{id}")]
+        [Authorize(Roles = "Student")]
+        public async Task<ActionResult<TestAssignmentViewModel>> GetTestAssignmentForStudent(int id)
         {
-            var test = await _testAssignmentRepository.GetTestByIdAsync(id);
+            var result = await _testService.GetTestAssignmentAsync(id, false);
 
-            if (test == null)
+            if (!result.IsSuccess)
             {
-                return NotFound();
+                return BadRequest(result.Error);
             }
 
-            var result = new TestToCheckViewModel
-            {
-                TestAssignmentId = test.Id,
-                StudentId = test.StudentId,
-                Answers = test
-                    .Answers.Select(x => new AnswerViewModel
-                    {
-                        QuestionId = x.QuestionId,
-                        TextAnswer = x.TextAnswer,
-                        SelectedOptions = x
-                            .SelectedOptions.Select(so => new SelectedOptionViewModel
-                            {
-                                TestOptionId = so.Id,
-                            })
-                            .ToList(),
-                    })
-                    .ToList(),
-            };
-
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Lecturer")]
         public async Task<ActionResult<TestAssignmentViewModel>> GetTestAssignment(int id)
         {
-            var testAssignment = await _testRepository.GetByIdAsync(id);
-            var categoryList = testAssignment.Categories.Split(';').ToList();
-            if (testAssignment == null)
+            var result = await _testService.GetTestAssignmentAsync(id, true);
+
+            if (!result.IsSuccess)
             {
-                return NotFound();
+                return BadRequest(result.Error);
             }
-            var questions = _testService.GetQuestions(id);
-            var vm = new TestAssignmentViewModel()
-            {
-                Id = testAssignment.Id,
-                Title = testAssignment.Title,
-                StudentId = testAssignment.StudentId,
-                StartTime = testAssignment.StartTime,
-                EndTime = testAssignment.EndTime,
-                TimeLimit = testAssignment.TimeLimit,
 
-                NumberOfQuestions = testAssignment.NumberOfQuestions,
-                Questions = questions
-                    .Select(q => new QuestionViewModel
-                    {
-                        Id = q.Id,
-                        Category = q.Category,
-                        QuestionText = q.QuestionText,
-                        Type = q.Type,
-                        CorrectAnswer = q.CorrectAnswer,
-
-                        TestOptions = _testService
-                            .GetTestOption(q)
-                            .Select(x => _mapper.Map<TestOption, OptionViewModel>(x))
-                            .ToList(),
-                    })
-                    .ToList(),
-            };
-            return Ok(vm);
+            return Ok(result.Data);
         }
 
         // PUT: api/TestAssignments/5

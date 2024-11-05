@@ -23,7 +23,8 @@ namespace UniPlatform.DB
 
         public DbSet<StudentGroup> StudentGroups { get; set; }
 
-        public DbSet<SelectedOptions> SelectedOptions { get; set; }
+        public DbSet<SelectedOption> SelectedOptions { get; set; }
+        public DbSet<TestAttempt> TestAttempts { get; set; }
 
         public DbSet<Question> Questions { get; set; }
         public DbSet<TestQuestion> TestQuestions { get; set; }

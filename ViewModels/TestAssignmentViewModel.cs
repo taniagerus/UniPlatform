@@ -22,6 +22,7 @@ namespace UniPlatform.ViewModels
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public int TimeLimit { get; set; }
+        public int? MaxPoints { get; set; }
         public List<CategoryQuestionCountViewModel> CategoryQuestions { get; set; } =
             new List<CategoryQuestionCountViewModel>();
         public int NumberOfQuestions { get; set; }

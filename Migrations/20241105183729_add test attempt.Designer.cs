@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using UniPlatform.DB;
@@ -11,9 +12,11 @@ using UniPlatform.DB;
 namespace UniPlatform.Migrations
 {
     [DbContext(typeof(PlatformDbContext))]
-    partial class PlatformDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241105183729_add test attempt")]
+    partial class addtestattempt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -317,16 +320,13 @@ namespace UniPlatform.Migrations
                     b.ToTable("Questions");
                 });
 
-            modelBuilder.Entity("UniPlatform.DB.Entities.SelectedOption", b =>
+            modelBuilder.Entity("UniPlatform.DB.Entities.SelectedOptions", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AnswerId")
-                        .HasColumnType("integer");
 
                     b.Property<int>("QuestionId")
                         .HasColumnType("integer");
@@ -335,8 +335,6 @@ namespace UniPlatform.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AnswerId");
 
                     b.HasIndex("QuestionId");
 
@@ -449,6 +447,9 @@ namespace UniPlatform.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AnswerId")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("CorrectOrder")
                         .HasColumnType("integer");
 
@@ -466,6 +467,8 @@ namespace UniPlatform.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AnswerId");
 
                     b.HasIndex("QuestionId");
 
@@ -806,31 +809,23 @@ namespace UniPlatform.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("UniPlatform.DB.Entities.SelectedOption", b =>
+            modelBuilder.Entity("UniPlatform.DB.Entities.SelectedOptions", b =>
                 {
-                    b.HasOne("UniPlatform.DB.Entities.Answer", "Answer")
-                        .WithMany("SelectedOptions")
-                        .HasForeignKey("AnswerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("UniPlatform.DB.Entities.Question", "Question")
                         .WithMany()
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UniPlatform.DB.Entities.TestOption", "TestOption")
+                    b.HasOne("UniPlatform.DB.Entities.TestOption", "Option")
                         .WithMany()
                         .HasForeignKey("TestOptionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Answer");
+                    b.Navigation("Option");
 
                     b.Navigation("Question");
-
-                    b.Navigation("TestOption");
                 });
 
             modelBuilder.Entity("UniPlatform.DB.Entities.StudentGroup", b =>
@@ -865,6 +860,10 @@ namespace UniPlatform.Migrations
 
             modelBuilder.Entity("UniPlatform.DB.Entities.TestOption", b =>
                 {
+                    b.HasOne("UniPlatform.DB.Entities.Answer", null)
+                        .WithMany("SelectedOptions")
+                        .HasForeignKey("AnswerId");
+
                     b.HasOne("UniPlatform.DB.Entities.Question", "Question")
                         .WithMany("TestOptions")
                         .HasForeignKey("QuestionId")

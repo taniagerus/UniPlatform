@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UniPlatform.DB.Entities
 {
@@ -15,8 +14,8 @@ namespace UniPlatform.DB.Entities
         public int QuestionId { get; set; }
         public virtual Question Question { get; set; }
 
-        public bool IsCorrect { get; set; } 
-        public int? CorrectOrder { get; set; } 
-        public string? MatchingPair { get; set; } 
+        public bool IsCorrect { get; set; }
+        public int? CorrectOrder { get; set; }
+        public string? MatchingPair { get; set; }
     }
 }

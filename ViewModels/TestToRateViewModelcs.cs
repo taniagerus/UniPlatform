@@ -4,7 +4,5 @@
     {
         public int TestAssignmentId { get; set; }
         public List<SelectedOptionViewModel> SelectedOptions { get; set; }
-
-
     }
 }
