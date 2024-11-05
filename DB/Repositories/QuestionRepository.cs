@@ -12,6 +12,13 @@ namespace UniPlatform.DB.Repositories
             _context = context;
         }
 
+        public async Task<int> GetQuestionsCountByCategoryAsync(          string category      )
+        {
+            return await _context
+                .Questions.CountAsync(e => e.Category == category);                
+        }
+
+
         public async Task<IEnumerable<Question>> GetRandomTestQuestionsAsync(
             string category,
             int numberOfQuestions

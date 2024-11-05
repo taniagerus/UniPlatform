@@ -60,6 +60,13 @@ namespace UniPlatform.Controllers
                 return BadRequest(ModelState);
             }
 
+            var validationResult = await _testService.ValidateQuestionsPerCategory( test );
+
+            if (!validationResult.IsSuccess)
+            {                
+                return BadRequest(validationResult.Error);
+            }
+
             var questions = new List<Question>();
             foreach (var categoryQuestion in test.CategoryQuestions)
             {
@@ -107,7 +114,7 @@ namespace UniPlatform.Controllers
             //        .Select(q => _mapper.Map<Question, QuestionViewModel>(q))
             //        .ToList(),
             //};
-            return CreatedAtAction("GetTestAssignment", new { id = testConfiguration.Id }, result);
+            return CreatedAtAction(nameof(GetTestAssignment), new { id = testConfiguration.Id }, result);
         }
 
         [HttpPost, Route("TestToCheck")]

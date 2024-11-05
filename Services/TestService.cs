@@ -37,6 +37,30 @@ public class TestService
         _selectedOptionsRepository = selectedOptionsRepository;
     }
 
+
+    public async Task<BaseResult<bool>> ValidateQuestionsPerCategory(CreateTestAssignmentRequest test)
+    {
+
+        foreach (var categoryQuestion in test.CategoryQuestions)
+        {
+            var totalQuestionsInDb = await _questionRepository.GetQuestionsCountByCategoryAsync(categoryQuestion.Category);
+            if (totalQuestionsInDb < categoryQuestion.QuestionCount)
+            {
+                return new BaseResult<bool>()
+                {
+                    IsSuccess = false,
+                    Error = $"{categoryQuestion.Category} - ти тут притармажуй"
+                };
+            }
+        }
+        return new BaseResult<bool>()
+        {
+            IsSuccess = true,
+            Data = true
+        };
+
+    }
+
     public async Task<List<Question>> GetRandomTestQuestionsForAssignment(
         string category,
         int numberOfQuestions
