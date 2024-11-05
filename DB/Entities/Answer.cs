@@ -15,8 +15,8 @@ namespace UniPlatform.DB.Entities
         public virtual Question Question { get; set; }
 
         public virtual ICollection<TestOption> SelectedOptions { get; set; } =
-            new List<TestOption>(); // для MultipleChoice
-        public string? TextAnswer { get; set; } // для TextAnswer
+            new List<TestOption>(); 
+        public string? TextAnswer { get; set; } 
         public decimal? Points { get; set; }
     }
 }

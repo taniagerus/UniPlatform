@@ -161,8 +161,8 @@ namespace UniPlatform.Controllers
             return CreatedAtAction("GetTestToCheck", new { id = test.TestAssignmentId }, test);
         }
 
-        [HttpGet("TestToCheck/{id}")]
-        public async Task<ActionResult<TestToCheckViewModel>> GetTestToCheck(int id)
+        [HttpGet("TestToComplete/{id}")]
+        public async Task<ActionResult<TestToCheckViewModel>> TestToComplete(int id)
         {
             var test = await _testAssignmentRepository.GetTestByIdAsync(id);
 

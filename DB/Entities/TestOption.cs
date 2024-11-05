@@ -15,8 +15,8 @@ namespace UniPlatform.DB.Entities
         public int QuestionId { get; set; }
         public virtual Question Question { get; set; }
 
-        public bool IsCorrect { get; set; } // для SingleChoice
-        public int? CorrectOrder { get; set; } // для Sequence
-        public string? MatchingPair { get; set; } // для Matching
+        public bool IsCorrect { get; set; } 
+        public int? CorrectOrder { get; set; } 
+        public string? MatchingPair { get; set; } 
     }
 }
